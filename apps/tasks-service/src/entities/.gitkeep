@@ -1,0 +1,3 @@
+# Entities directory
+# Place your TypeORM entities here (Task, Comment, TaskHistory, etc.)
+
