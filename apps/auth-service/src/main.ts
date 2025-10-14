@@ -28,9 +28,9 @@ async function bootstrap() {
   await app.startAllMicroservices();
 
   const port = process.env.PORT || 3002;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
 
-  console.log(`🔐 Auth Service running on http://localhost:${port}`);
+  console.log(`🔐 Auth Service running on http://0.0.0.0:${port}`);
 }
 
 bootstrap();

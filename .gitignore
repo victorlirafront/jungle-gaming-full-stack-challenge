@@ -47,3 +47,7 @@ yarn-error.log*
 # Docker
 *.log
 
+EXAMPLES.md
+IMPLEMENTATION_SUMMARY.md
+INTEGRATION.md
+QUICKSTART.md
