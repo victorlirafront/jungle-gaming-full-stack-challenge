@@ -2,6 +2,7 @@
   "name": "full-stack-challenge",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "yarn@1.22.21",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -10,6 +11,8 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
+    "test": "turbo run test",
+    "test:ci": "turbo run test:ci",
     "clean": "turbo run clean",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",

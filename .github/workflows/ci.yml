@@ -1,0 +1,19 @@
+name: Continuous Integration
+on: pull_request
+
+jobs:
+  continuous-integration:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Using Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run install, build and test
+        run: |
+          yarn install
+          yarn build
+          yarn test:ci
+
