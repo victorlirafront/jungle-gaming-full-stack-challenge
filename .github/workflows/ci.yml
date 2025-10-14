@@ -2,18 +2,107 @@ name: Continuous Integration
 on: pull_request
 
 jobs:
-  continuous-integration:
+  web:
+    name: Build & Test Web
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
-      - name: Using Node.js
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Run install, build and test
-        run: |
-          yarn install
-          yarn build
-          yarn test:ci
+          cache: 'yarn'
 
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build web
+        run: yarn build --filter=web
+
+      - name: Test web
+        run: yarn test:ci --filter=web
+
+  api-gateway:
+    name: Build & Test API Gateway
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build api-gateway
+        run: yarn build --filter=api-gateway
+
+      - name: Test api-gateway
+        run: yarn test:ci --filter=api-gateway
+
+  auth-service:
+    name: Build & Test Auth Service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build auth-service
+        run: yarn build --filter=auth-service
+
+      - name: Test auth-service
+        run: yarn test:ci --filter=auth-service
+
+  tasks-service:
+    name: Build & Test Tasks Service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build tasks-service
+        run: yarn build --filter=tasks-service
+
+      - name: Test tasks-service
+        run: yarn test:ci --filter=tasks-service
+
+  notifications-service:
+    name: Build & Test Notifications Service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build notifications-service
+        run: yarn build --filter=notifications-service
+
+      - name: Test notifications-service
+        run: yarn test:ci --filter=notifications-service
