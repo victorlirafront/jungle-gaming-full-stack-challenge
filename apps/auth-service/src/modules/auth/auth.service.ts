@@ -11,6 +11,7 @@ import * as bcrypt from 'bcrypt';
 import { User, RefreshToken } from '../../entities';
 import { RegisterDto, LoginDto, RefreshTokenDto } from './dto';
 import { AuthResponse, JwtPayload } from './interfaces/auth-response.interface';
+import { AUTH_CONSTANTS } from '../../common';
 
 @Injectable()
 export class AuthService {
@@ -38,7 +39,7 @@ export class AuthService {
       }
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, AUTH_CONSTANTS.BCRYPT_SALT_ROUNDS);
 
     const user = this.userRepository.create({
       email,
@@ -97,7 +98,7 @@ export class AuthService {
 
     try {
       await this.jwtService.verifyAsync(refreshToken, {
-        secret: process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key',
+        secret: process.env.JWT_REFRESH_SECRET || AUTH_CONSTANTS.DEFAULT_JWT_REFRESH_SECRET,
       });
     } catch (error) {
       throw new UnauthorizedException('Invalid refresh token');
@@ -131,17 +132,17 @@ export class AuthService {
     };
 
     const accessToken = await this.jwtService.signAsync(payload, {
-      secret: process.env.JWT_SECRET || 'your-secret-key',
-      expiresIn: '15m',
+      secret: process.env.JWT_SECRET || AUTH_CONSTANTS.DEFAULT_JWT_SECRET,
+      expiresIn: AUTH_CONSTANTS.ACCESS_TOKEN_EXPIRATION,
     });
 
     const refreshToken = await this.jwtService.signAsync(payload, {
-      secret: process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key',
-      expiresIn: '7d',
+      secret: process.env.JWT_REFRESH_SECRET || AUTH_CONSTANTS.DEFAULT_JWT_REFRESH_SECRET,
+      expiresIn: AUTH_CONSTANTS.REFRESH_TOKEN_EXPIRATION,
     });
 
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
+    expiresAt.setDate(expiresAt.getDate() + AUTH_CONSTANTS.REFRESH_TOKEN_EXPIRATION_DAYS);
 
     const refreshTokenEntity = this.refreshTokenRepository.create({
       token: refreshToken,

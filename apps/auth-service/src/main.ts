@@ -2,9 +2,11 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { Transport, MicroserviceOptions } from '@nestjs/microservices';
 import { AppModule } from './app.module';
+import { ConfigService } from './config/config.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -14,11 +16,12 @@ async function bootstrap() {
     })
   );
 
+  const { url, queue } = configService.rabbitMQConfig;
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
-      urls: [process.env.RABBITMQ_URL || 'amqp://admin:admin@rabbitmq:5672'],
-      queue: 'auth_queue',
+      urls: [url],
+      queue,
       queueOptions: {
         durable: true,
       },
@@ -27,7 +30,7 @@ async function bootstrap() {
 
   await app.startAllMicroservices();
 
-  const port = process.env.PORT || 3002;
+  const { port } = configService.appConfig;
   await app.listen(port, '0.0.0.0');
 
   console.log(`🔐 Auth Service running on http://0.0.0.0:${port}`);
