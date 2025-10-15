@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class ConfigService {
-  // Application Configuration
   get appConfig() {
     return {
       port: parseInt(process.env.PORT || '3001'),
@@ -12,7 +11,6 @@ export class ConfigService {
     };
   }
 
-  // CORS Configuration
   get corsConfig() {
     return {
       origin: process.env.CORS_ORIGIN || '*',
@@ -20,7 +18,6 @@ export class ConfigService {
     };
   }
 
-  // RabbitMQ Configuration
   get rabbitMQConfig() {
     return {
       url: process.env.RABBITMQ_URL || 'amqp://admin:admin@rabbitmq:5672',
@@ -28,7 +25,6 @@ export class ConfigService {
     };
   }
 
-  // Throttler Configuration
   get throttlerConfig() {
     return {
       ttl: parseInt(process.env.THROTTLE_TTL || '1000'),
@@ -36,7 +32,6 @@ export class ConfigService {
     };
   }
 
-  // Swagger Configuration
   get swaggerConfig() {
     return {
       title: 'Task Management API',
