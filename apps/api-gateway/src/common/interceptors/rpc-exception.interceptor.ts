@@ -1,0 +1,56 @@
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+@Injectable()
+export class RpcExceptionInterceptor implements NestInterceptor {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    return next.handle().pipe(
+      catchError((error) => {
+        // Handle RPC errors from microservices
+        if (error?.error) {
+          const rpcError = error.error;
+          
+          // Map common NestJS exceptions
+          const statusCode = this.getHttpStatus(rpcError.statusCode || rpcError.status);
+          const message = rpcError.message || 'Internal server error';
+          
+          return throwError(() => new HttpException(message, statusCode));
+        }
+
+        // Pass through regular HTTP exceptions
+        if (error instanceof HttpException) {
+          return throwError(() => error);
+        }
+
+        // Default error handling
+        return throwError(
+          () => new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR)
+        );
+      })
+    );
+  }
+
+  private getHttpStatus(statusCode: number): number {
+    // Map common status codes
+    const statusMap: Record<number, number> = {
+      400: HttpStatus.BAD_REQUEST,
+      401: HttpStatus.UNAUTHORIZED,
+      403: HttpStatus.FORBIDDEN,
+      404: HttpStatus.NOT_FOUND,
+      409: HttpStatus.CONFLICT,
+      422: HttpStatus.UNPROCESSABLE_ENTITY,
+      500: HttpStatus.INTERNAL_SERVER_ERROR,
+    };
+
+    return statusMap[statusCode] || HttpStatus.INTERNAL_SERVER_ERROR;
+  }
+}
+
