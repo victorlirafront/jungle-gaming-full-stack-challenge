@@ -3,7 +3,6 @@ import { AUTH_CONSTANTS } from '../common';
 
 @Injectable()
 export class ConfigService {
-  // Database Configuration
   get dbConfig() {
     return {
       type: 'postgres' as const,
@@ -17,7 +16,6 @@ export class ConfigService {
     };
   }
 
-  // JWT Configuration
   get jwtConfig() {
     return {
       secret: process.env.JWT_SECRET || AUTH_CONSTANTS.DEFAULT_JWT_SECRET,
@@ -30,7 +28,6 @@ export class ConfigService {
     };
   }
 
-  // RabbitMQ Configuration
   get rabbitMQConfig() {
     return {
       url: process.env.RABBITMQ_URL || AUTH_CONSTANTS.DEFAULT_RABBITMQ_URL,
@@ -38,7 +35,6 @@ export class ConfigService {
     };
   }
 
-  // Application Configuration
   get appConfig() {
     return {
       port: parseInt(process.env.PORT || '3002'),
