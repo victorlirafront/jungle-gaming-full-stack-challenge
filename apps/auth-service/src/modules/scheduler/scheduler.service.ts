@@ -19,16 +19,5 @@ export class SchedulerService {
       this.logger.error('Failed to clean expired tokens', error);
     }
   }
-
-  @Cron(CronExpression.EVERY_HOUR)
-  async handleHourlyCleanup() {
-    this.logger.debug('Performing hourly token cleanup...');
-
-    try {
-      await this.authService.cleanExpiredTokens();
-    } catch (error) {
-      this.logger.error('Hourly cleanup failed', error);
-    }
-  }
 }
 
