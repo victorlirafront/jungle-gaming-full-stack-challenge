@@ -1,9 +1,7 @@
-import { TaskPriority, TaskStatus } from '@repo/types';
+import { TaskPriority, TaskStatus, User } from '@repo/types';
 
-export interface User {
-  id: string;
+export interface MockUser extends User {
   name: string;
-  email: string;
   avatar?: string;
 }
 
@@ -16,32 +14,41 @@ export interface Task {
   deadline: string;
   createdAt: string;
   updatedAt: string;
-  assignedUsers: User[];
+  assignedUsers: MockUser[];
 }
 
 export interface Comment {
   id: string;
   taskId: string;
-  user: User;
+  user: MockUser;
   content: string;
   createdAt: string;
 }
 
-export const mockUsers: User[] = [
+export const mockUsers: MockUser[] = [
   {
     id: '1',
     name: 'João Silva',
     email: 'joao@example.com',
+    username: 'joao',
+    createdAt: new Date('2025-01-01'),
+    updatedAt: new Date('2025-01-01'),
   },
   {
     id: '2',
     name: 'Maria Santos',
     email: 'maria@example.com',
+    username: 'maria',
+    createdAt: new Date('2025-01-01'),
+    updatedAt: new Date('2025-01-01'),
   },
   {
     id: '3',
     name: 'Pedro Oliveira',
     email: 'pedro@example.com',
+    username: 'pedro',
+    createdAt: new Date('2025-01-01'),
+    updatedAt: new Date('2025-01-01'),
   },
 ];
 
