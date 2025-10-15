@@ -1,11 +1,16 @@
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { useAuthStore } from '@/store/auth.store';
-import { useLogout } from '@/hooks';
 
 export function Header() {
+  const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const handleLogout = useLogout();
+  const logout = useAuthStore((state) => state.logout);
+
+  const handleLogout = () => {
+    logout();
+    navigate({ to: '/login' });
+  };
 
   return (
     <header className="border-b bg-white">

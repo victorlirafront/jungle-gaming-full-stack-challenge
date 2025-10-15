@@ -1,15 +1,18 @@
 import { useState } from 'react';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useLogin } from '@/hooks';
+import { useAuthStore } from '@/store/auth.store';
 import { loginSchema, type LoginFormData } from '@/validations';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 
 export function Login() {
-  const { mutate: login, isPending, error } = useLogin();
+  const navigate = useNavigate();
+  const login = useAuthStore((state) => state.login);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const error = useAuthStore((state) => state.error);
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -20,8 +23,13 @@ export function Login() {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = (data: LoginFormData) => {
-    login(data);
+  const onSubmit = async (data: LoginFormData) => {
+    try {
+      await login(data);
+      navigate({ to: '/' });
+    } catch (err) {
+      console.error('Login error:', err);
+    }
   };
 
   return (
@@ -37,7 +45,7 @@ export function Login() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {error.message}
+              {error}
             </div>
           )}
 
@@ -48,7 +56,7 @@ export function Login() {
             <Input
               {...register('emailOrUsername')}
               placeholder="seu@email.com ou username"
-              disabled={isPending}
+              disabled={isLoading}
             />
             {errors.emailOrUsername && (
               <p className="text-red-500 text-sm mt-1">
@@ -66,7 +74,7 @@ export function Login() {
                 {...register('password')}
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
-                disabled={isPending}
+                disabled={isLoading}
               />
               <button
                 type="button"
@@ -86,9 +94,9 @@ export function Login() {
           <Button
             type="submit"
             className="w-full"
-            disabled={isPending}
+            disabled={isLoading}
           >
-            {isPending ? 'Entrando...' : 'Entrar'}
+            {isLoading ? 'Entrando...' : 'Entrar'}
           </Button>
         </form>
 
