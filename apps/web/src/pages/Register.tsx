@@ -1,15 +1,18 @@
 import { useState } from 'react';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRegister } from '@/hooks';
+import { useAuthStore } from '@/store/auth.store';
 import { registerSchema, type RegisterFormData } from '@/validations';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 
 export function Register() {
-  const { mutate: registerUser, isPending, error } = useRegister();
+  const navigate = useNavigate();
+  const registerUser = useAuthStore((state) => state.register);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const error = useAuthStore((state) => state.error);
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -20,8 +23,13 @@ export function Register() {
     resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = (data: RegisterFormData) => {
-    registerUser(data);
+  const onSubmit = async (data: RegisterFormData) => {
+    try {
+      await registerUser(data);
+      navigate({ to: '/' });
+    } catch (err) {
+      console.error('Registration error:', err);
+    }
   };
 
   return (
@@ -37,7 +45,7 @@ export function Register() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {error.message}
+              {error}
             </div>
           )}
 
@@ -49,7 +57,7 @@ export function Register() {
               {...register('email')}
               type="email"
               placeholder="seu@email.com"
-              disabled={isPending}
+              disabled={isLoading}
             />
             {errors.email && (
               <p className="text-red-500 text-sm mt-1">
@@ -65,7 +73,7 @@ export function Register() {
             <Input
               {...register('username')}
               placeholder="seu_username"
-              disabled={isPending}
+              disabled={isLoading}
             />
             {errors.username && (
               <p className="text-red-500 text-sm mt-1">
@@ -83,7 +91,7 @@ export function Register() {
                 {...register('password')}
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
-                disabled={isPending}
+                disabled={isLoading}
               />
               <button
                 type="button"
@@ -106,9 +114,9 @@ export function Register() {
           <Button
             type="submit"
             className="w-full"
-            disabled={isPending}
+            disabled={isLoading}
           >
-            {isPending ? 'Criando conta...' : 'Criar conta'}
+            {isLoading ? 'Criando conta...' : 'Criar conta'}
           </Button>
         </form>
 
