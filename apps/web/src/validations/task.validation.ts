@@ -1,0 +1,32 @@
+import { z } from 'zod';
+import { TaskPriority, TaskStatus } from '@repo/types';
+
+export const taskSchema = z.object({
+  title: z
+    .string()
+    .min(1, 'Título é obrigatório')
+    .max(200, 'Título deve ter no máximo 200 caracteres'),
+  description: z
+    .string()
+    .max(1000, 'Descrição deve ter no máximo 1000 caracteres')
+    .optional(),
+  priority: z.nativeEnum(TaskPriority, {
+    errorMap: () => ({ message: 'Prioridade inválida' }),
+  }),
+  status: z.nativeEnum(TaskStatus, {
+    errorMap: () => ({ message: 'Status inválido' }),
+  }),
+  deadline: z
+    .string()
+    .min(1, 'Prazo é obrigatório')
+    .refine((date) => {
+      const selectedDate = new Date(date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return selectedDate >= today;
+    }, 'O prazo não pode ser no passado'),
+});
+
+export type TaskFormData = z.infer<typeof taskSchema>;
+
+
