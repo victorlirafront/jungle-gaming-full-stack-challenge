@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { ConfigService } from './config';
+import { RpcExceptionFilter } from './common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,6 +18,8 @@ async function bootstrap() {
       transform: true,
     })
   );
+
+  app.useGlobalFilters(new RpcExceptionFilter());
 
   app.enableCors(configService.corsConfig);
 

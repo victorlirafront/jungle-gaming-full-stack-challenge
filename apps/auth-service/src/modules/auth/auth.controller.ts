@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto, RefreshTokenDto } from './dto';
 
@@ -9,7 +9,20 @@ export class AuthController {
 
   @MessagePattern({ cmd: 'register' })
   async register(@Payload() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+    try {
+      return await this.authService.register(registerDto);
+    } catch (error: any) {
+      throw new RpcException({
+        response: {
+          message: error.message || 'Internal server error',
+          error: error.name?.replace('Exception', '') || 'Error',
+          statusCode: error.status || 500,
+        },
+        status: error.status || 500,
+        message: error.message || 'Internal server error',
+        name: error.name,
+      });
+    }
   }
 
   @MessagePattern({ cmd: 'login' })
