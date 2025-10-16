@@ -37,18 +37,20 @@ export function TaskCard({ task, onView, onDelete }: TaskCardProps) {
 
       <CardContent>
         <div className="space-y-3">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>📅 Prazo:</span>
-            <span>{new Date(task.deadline).toLocaleDateString('pt-BR')}</span>
-          </div>
+          {task.dueDate && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>📅 Prazo:</span>
+              <span>{new Date(task.dueDate).toLocaleDateString('pt-BR')}</span>
+            </div>
+          )}
 
-          {task.assignedUsers.length > 0 && (
+          {task.assignments && task.assignments.length > 0 && (
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">👥 Atribuído a:</span>
               <div className="flex gap-1">
-                {task.assignedUsers.map((user) => (
-                  <Badge key={user.id} variant="outline" className="text-xs">
-                    {user.name}
+                {task.assignments.map((assignment) => (
+                  <Badge key={assignment.id} variant="outline" className="text-xs">
+                    User {assignment.userId.slice(0, 8)}
                   </Badge>
                 ))}
               </div>

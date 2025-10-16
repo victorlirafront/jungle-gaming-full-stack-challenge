@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from './modules/auth/auth.module';
+import { TasksModule } from './modules/tasks/tasks.module';
 import { ConfigModule, ConfigService } from './config';
 import { RpcExceptionInterceptor } from './common';
 
@@ -17,7 +19,19 @@ import { RpcExceptionInterceptor } from './common';
         },
       ],
     }),
+    JwtModule.registerAsync({
+      global: true,
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const config = configService.jwtConfig;
+        return {
+          secret: config.secret,
+          signOptions: { expiresIn: config.expiresIn as any },
+        };
+      },
+    }),
     AuthModule,
+    TasksModule,
   ],
   controllers: [],
   providers: [
