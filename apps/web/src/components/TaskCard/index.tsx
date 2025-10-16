@@ -57,6 +57,13 @@ export function TaskCard({ task, onView, onDelete }: TaskCardProps) {
             </div>
           )}
 
+          {task.commentsCount !== undefined && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>💬 Comentários:</span>
+              <span>{task.commentsCount}</span>
+            </div>
+          )}
+
           <div className="flex gap-2 pt-2">
             <Button size="sm" onClick={() => onView(task.id)}>
               Ver Detalhes
