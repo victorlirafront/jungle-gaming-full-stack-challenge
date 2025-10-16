@@ -167,7 +167,7 @@ export class TasksService {
     createCommentDto: CreateCommentDto,
     userId: string
   ): Promise<Comment> {
-    await this.findOne(taskId); // Verify task exists
+    const task = await this.findOne(taskId);
 
     const comment = this.commentRepository.create({
       ...createCommentDto,
@@ -177,7 +177,6 @@ export class TasksService {
 
     const savedComment = await this.commentRepository.save(comment);
 
-    // Create history
     await this.historyRepository.save({
       taskId,
       userId,
@@ -185,11 +184,14 @@ export class TasksService {
       details: 'Added a comment',
     });
 
-    // Emit notification
+    const assignedUserIds = task.assignments?.map((a) => a.userId) || [];
+
     this.notificationsClient.emit('task.commented', {
       taskId,
       commentId: savedComment.id,
       authorId: userId,
+      creatorId: task.creatorId,
+      assignedUserIds,
     });
 
     return savedComment;
