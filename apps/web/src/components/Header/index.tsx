@@ -1,5 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useAuthStore } from '@/store/auth.store';
+import { NotificationBell } from '../Notifications';
 
 export function Header() {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export function Header() {
               <Link to="/" className="text-sm hover:text-primary">
                 Tasks
               </Link>
+              <NotificationBell />
               <span className="text-sm text-muted-foreground">
                 {user?.username}
               </span>
