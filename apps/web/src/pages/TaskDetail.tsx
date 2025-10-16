@@ -1,10 +1,11 @@
-import { useState } from 'react';
-import { mockTasks, mockComments, mockUsers } from '@/lib/mock-data';
+import { useState, useEffect } from 'react';
+import { tasksService } from '@/services';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { CommentList } from '@/components/CommentList';
 import { TaskPriority, TaskStatus } from '@repo/types';
+import type { Task, Comment } from '@/types/task.types';
 
 interface TaskDetailProps {
   taskId: string;
@@ -26,10 +27,43 @@ const statusColors = {
 };
 
 export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
-  const task = mockTasks.find((t) => t.id === taskId);
-  const [comments, setComments] = useState(
-    mockComments.filter((c) => c.taskId === taskId)
-  );
+  const [task, setTask] = useState<Task | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadTask();
+    loadComments();
+  }, [taskId]);
+
+  const loadTask = async () => {
+    try {
+      setLoading(true);
+      const data = await tasksService.findOne(taskId);
+      setTask(data);
+    } catch (error) {
+      console.error('Error loading task:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadComments = async () => {
+    try {
+      const data = await tasksService.getComments(taskId);
+      setComments(data);
+    } catch (error) {
+      console.error('Error loading comments:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">Carregando tarefa...</p>
+      </div>
+    );
+  }
 
   if (!task) {
     return (
@@ -42,15 +76,14 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
     );
   }
 
-  const handleAddComment = (content: string) => {
-    const newComment = {
-      id: String(Date.now()),
-      taskId: task.id,
-      user: mockUsers[0],
-      content,
-      createdAt: new Date().toISOString(),
-    };
-    setComments([...comments, newComment]);
+  const handleAddComment = async (content: string) => {
+    try {
+      await tasksService.createComment(taskId, { content });
+      await loadComments();
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      alert('Erro ao adicionar comentário. Tente novamente.');
+    }
   };
 
   return (
@@ -79,23 +112,27 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h3 className="font-semibold mb-2">Prazo</h3>
-              <p className="text-sm">
-                📅 {new Date(task.deadline).toLocaleDateString('pt-BR')}
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">Atribuído a</h3>
-              <div className="flex gap-1 flex-wrap">
-                {task.assignedUsers.map((user) => (
-                  <Badge key={user.id} variant="outline">
-                    {user.name}
-                  </Badge>
-                ))}
+            {task.dueDate && (
+              <div>
+                <h3 className="font-semibold mb-2">Prazo</h3>
+                <p className="text-sm">
+                  📅 {new Date(task.dueDate).toLocaleDateString('pt-BR')}
+                </p>
               </div>
-            </div>
+            )}
+
+            {task.assignments && task.assignments.length > 0 && (
+              <div>
+                <h3 className="font-semibold mb-2">Atribuído a</h3>
+                <div className="flex gap-1 flex-wrap">
+                  {task.assignments.map((assignment) => (
+                    <Badge key={assignment.id} variant="outline">
+                      User {assignment.userId.slice(0, 8)}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-muted-foreground">
