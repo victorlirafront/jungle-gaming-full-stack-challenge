@@ -30,6 +30,7 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
   const [task, setTask] = useState<Task | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [addingComment, setAddingComment] = useState(false);
 
   useEffect(() => {
     loadTask();
@@ -77,12 +78,19 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
   }
 
   const handleAddComment = async (content: string) => {
+    if (addingComment) {
+      return;
+    }
+
     try {
+      setAddingComment(true);
       await tasksService.createComment(taskId, { content });
       await loadComments();
     } catch (error) {
       console.error('Error adding comment:', error);
       alert('Erro ao adicionar comentário. Tente novamente.');
+    } finally {
+      setAddingComment(false);
     }
   };
 
