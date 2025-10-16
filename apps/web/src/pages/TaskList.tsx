@@ -5,7 +5,7 @@ import { TaskCard } from '@/components/TaskCard';
 import { TaskFilters } from '@/components/TaskFilter';
 import { TaskForm } from '@/components/TaskForm';
 import { Button } from '@/components/ui/Button';
-import { TaskPriority, TaskStatus } from '@repo/types';
+import { TaskFormData } from '@/validations';
 import type { Task } from '@/types/task.types';
 
 
@@ -48,13 +48,7 @@ export function TaskList() {
     });
   }, [tasks, search, statusFilter, priorityFilter]);
 
-  const handleCreateTask = async (newTask: {
-    title: string;
-    description: string;
-    priority: TaskPriority;
-    status: TaskStatus;
-    deadline: string;
-  }) => {
+  const handleCreateTask = async (newTask: TaskFormData) => {
     try {
       await tasksService.create({
         title: newTask.title,
