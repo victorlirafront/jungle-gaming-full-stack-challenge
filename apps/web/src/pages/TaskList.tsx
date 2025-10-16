@@ -26,11 +26,9 @@ export function TaskList() {
     try {
       setLoading(true);
       const data = await tasksService.findAll();
-      console.log('✅ Tasks carregadas da API:', data);
       setTasks(data);
     } catch (error) {
-      console.error('❌ Erro ao carregar tasks:', error);
-      // Se falhar (ex: não autenticado), mostra lista vazia
+      console.error('Error loading tasks:', error);
       setTasks([]);
     } finally {
       setLoading(false);
