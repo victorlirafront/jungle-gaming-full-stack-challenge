@@ -68,7 +68,8 @@ export class TasksService {
   async findAll(filterDto: FilterTasksDto): Promise<Task[]> {
     const query = this.taskRepository
       .createQueryBuilder('task')
-      .leftJoinAndSelect('task.assignments', 'assignments');
+      .leftJoinAndSelect('task.assignments', 'assignments')
+      .loadRelationCountAndMap('task.commentsCount', 'task.comments');
 
     if (filterDto.status) {
       query.andWhere('task.status = :status', { status: filterDto.status });
