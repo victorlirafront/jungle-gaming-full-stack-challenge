@@ -22,6 +22,7 @@ export class ConfigService {
     return {
       url: process.env.RABBITMQ_URL || 'amqp://admin:admin@rabbitmq:5672',
       authQueue: 'auth_queue',
+      tasksQueue: 'tasks_queue',
     };
   }
 
@@ -29,6 +30,13 @@ export class ConfigService {
     return {
       ttl: parseInt(process.env.THROTTLE_TTL || '1000'),
       limit: parseInt(process.env.THROTTLE_LIMIT || '10'),
+    };
+  }
+
+  get jwtConfig() {
+    return {
+      secret: process.env.JWT_SECRET || 'your-secret-key',
+      expiresIn: process.env.JWT_EXPIRES_IN || '15m',
     };
   }
 
