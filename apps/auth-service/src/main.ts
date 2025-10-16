@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { Transport, MicroserviceOptions } from '@nestjs/microservices';
 import { AppModule } from './app.module';
 import { ConfigService } from './config/config.service';
+import { RpcExceptionFilter } from './common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,6 +16,8 @@ async function bootstrap() {
       transform: true,
     })
   );
+
+  app.useGlobalFilters(new RpcExceptionFilter());
 
   const { url, queue } = configService.rabbitMQConfig;
   app.connectMicroservice<MicroserviceOptions>({

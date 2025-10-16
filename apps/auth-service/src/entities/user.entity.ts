@@ -22,6 +22,9 @@ export class User {
   @Column({ length: 255 })
   password!: string;
 
+  @Column({ nullable: true, length: 255 })
+  fullName?: string;
+
   @Column({ default: true })
   isActive!: boolean;
 

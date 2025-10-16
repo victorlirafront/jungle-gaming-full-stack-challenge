@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength, MaxLength, Matches } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength, MaxLength, Matches, IsOptional } from 'class-validator';
 
 export class RegisterDto {
   @IsEmail({}, { message: 'Email must be valid' })
@@ -22,5 +22,10 @@ export class RegisterDto {
     message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number',
   })
   password!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(255, { message: 'Full name must not exceed 255 characters' })
+  fullName?: string;
 }
 
