@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Comment } from '@/lib/mock-data';
+import { Comment } from '@/types/task.types';
 import { Card, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Textarea } from '../ui/Textarea';
@@ -52,20 +52,20 @@ export function CommentList({ comments, onAddComment }: CommentListProps) {
             <Card key={comment.id}>
               <CardContent className="pt-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-sm font-medium">
-                      {comment.user.name.charAt(0)}
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span className="text-sm font-medium">
+                    {comment.authorId.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-sm">User {comment.authorId.slice(0, 8)}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(comment.createdAt).toLocaleString('pt-BR')}
                     </span>
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm">{comment.user.name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(comment.createdAt).toLocaleString('pt-BR')}
-                      </span>
-                    </div>
-                    <p className="text-sm mt-1">{comment.content}</p>
-                  </div>
+                  <p className="text-sm mt-1">{comment.content}</p>
+                </div>
                 </div>
               </CardContent>
             </Card>

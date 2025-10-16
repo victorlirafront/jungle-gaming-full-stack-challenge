@@ -1,4 +1,4 @@
-import { Task } from "@/lib/mock-data";
+import { Task } from "@/types/task.types";
 
 export interface TaskCardProps {
   task: Task;
