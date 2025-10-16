@@ -68,7 +68,8 @@ export class TasksService {
   async findAll(filterDto: FilterTasksDto): Promise<Task[]> {
     const query = this.taskRepository
       .createQueryBuilder('task')
-      .leftJoinAndSelect('task.assignments', 'assignments');
+      .leftJoinAndSelect('task.assignments', 'assignments')
+      .loadRelationCountAndMap('task.commentsCount', 'task.comments');
 
     if (filterDto.status) {
       query.andWhere('task.status = :status', { status: filterDto.status });
@@ -166,7 +167,7 @@ export class TasksService {
     createCommentDto: CreateCommentDto,
     userId: string
   ): Promise<Comment> {
-    await this.findOne(taskId); // Verify task exists
+    const task = await this.findOne(taskId);
 
     const comment = this.commentRepository.create({
       ...createCommentDto,
@@ -176,7 +177,6 @@ export class TasksService {
 
     const savedComment = await this.commentRepository.save(comment);
 
-    // Create history
     await this.historyRepository.save({
       taskId,
       userId,
@@ -184,11 +184,14 @@ export class TasksService {
       details: 'Added a comment',
     });
 
-    // Emit notification
+    const assignedUserIds = task.assignments?.map((a) => a.userId) || [];
+
     this.notificationsClient.emit('task.commented', {
       taskId,
       commentId: savedComment.id,
       authorId: userId,
+      creatorId: task.creatorId,
+      assignedUserIds,
     });
 
     return savedComment;

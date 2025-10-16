@@ -16,15 +16,11 @@ export class HttpClient {
     this.baseUrl = baseUrl.replace(/\/$/, '');
   }
 
-  async get<T>(
-    path: string,
-    init?: RequestInit & { params?: Record<string, string | string[]> },
-  ): Promise<T> {
-    const url = this.buildUrl(path, init?.params);
+  private getHeaders(init?: RequestInit, withContentType = false): HeadersInit {
     const token = localStorage.getItem('accessToken');
-
     const headers: HeadersInit = {
       Accept: 'application/json',
+      ...(withContentType && { 'Content-Type': 'application/json' }),
       ...(init?.headers ?? {}),
     };
 
@@ -32,30 +28,26 @@ export class HttpClient {
       (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
     }
 
+    return headers;
+  }
+
+  async get<T>(
+    path: string,
+    init?: RequestInit & { params?: Record<string, string | string[]> },
+  ): Promise<T> {
+    const url = this.buildUrl(path, init?.params);
     const res = await fetch(url, {
       method: 'GET',
-      headers,
+      headers: this.getHeaders(init),
       ...init,
     });
     return this.handle<T>(res);
   }
 
   async post<T>(path: string, body?: unknown, init?: RequestInit): Promise<T> {
-    const token = localStorage.getItem('accessToken');
-
-    const headers: HeadersInit = {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      ...(init?.headers ?? {}),
-    };
-
-    if (token) {
-      (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
-    }
-
     const res = await fetch(this.url(path), {
       method: 'POST',
-      headers,
+      headers: this.getHeaders(init, true),
       body: body !== undefined ? JSON.stringify(body) : undefined,
       ...init,
     });
@@ -63,21 +55,9 @@ export class HttpClient {
   }
 
   async put<T>(path: string, body?: unknown, init?: RequestInit): Promise<T> {
-    const token = localStorage.getItem('accessToken');
-
-    const headers: HeadersInit = {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      ...(init?.headers ?? {}),
-    };
-
-    if (token) {
-      (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
-    }
-
     const res = await fetch(this.url(path), {
       method: 'PUT',
-      headers,
+      headers: this.getHeaders(init, true),
       body: body !== undefined ? JSON.stringify(body) : undefined,
       ...init,
     });
@@ -85,20 +65,9 @@ export class HttpClient {
   }
 
   async delete<T>(path: string, init?: RequestInit): Promise<T> {
-    const token = localStorage.getItem('accessToken');
-
-    const headers: HeadersInit = {
-      Accept: 'application/json',
-      ...(init?.headers ?? {}),
-    };
-
-    if (token) {
-      (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
-    }
-
     const res = await fetch(this.url(path), {
       method: 'DELETE',
-      headers,
+      headers: this.getHeaders(init),
       ...init,
     });
     return this.handle<T>(res);
@@ -129,7 +98,6 @@ export class HttpClient {
     const contentType = res.headers.get('content-type') ?? '';
     const isJson = contentType.includes('application/json');
 
-    // Para respostas sem conteúdo (204, etc), não tenta ler o body
     if (res.status === 204 || res.headers.get('content-length') === '0') {
       if (!res.ok) {
         throw new HttpError(`HTTP ${res.status}`, res.status);
@@ -137,7 +105,6 @@ export class HttpClient {
       return {} as T;
     }
 
-    // Tenta ler o body, mas lida com casos onde está vazio
     let data: any;
     try {
       if (isJson) {
@@ -147,7 +114,6 @@ export class HttpClient {
         data = await res.text();
       }
     } catch (error) {
-      // Se falhar ao parsear, retorna vazio para respostas OK
       if (res.ok) {
         return {} as T;
       }

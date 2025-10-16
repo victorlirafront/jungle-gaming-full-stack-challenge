@@ -12,6 +12,7 @@ export interface Task {
   updatedAt: string;
   assignments?: TaskAssignment[];
   comments?: Comment[];
+  commentsCount?: number;
 }
 
 export interface TaskAssignment {

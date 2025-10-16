@@ -1,20 +1,7 @@
-import { TaskPriority, TaskStatus } from '@repo/types';
-
+import { TaskFormData } from '@/validations';
 
 export interface TaskFormProps {
-  onSubmit: (task: {
-    title: string;
-    description: string;
-    priority: TaskPriority;
-    status: TaskStatus;
-    deadline: string;
-  }) => void;
+  onSubmit: (task: TaskFormData) => void;
   onCancel: () => void;
-  initialData?: {
-    title: string;
-    description: string;
-    priority: TaskPriority;
-    status: TaskStatus;
-    deadline: string;
-  };
+  initialData?: TaskFormData;
 }
