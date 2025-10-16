@@ -12,9 +12,10 @@ services:
       - '3000:3000'
     environment:
       - NODE_ENV=development
+      - VITE_API_URL=http://localhost:3001/api
     networks:
       - challenge-network
-    command: npm run dev -- --host 0.0.0.0
+    command: npm run dev --workspace=web
 
   # API Gateway
   api-gateway:
