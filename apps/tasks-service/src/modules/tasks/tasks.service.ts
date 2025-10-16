@@ -118,9 +118,8 @@ export class TasksService {
     const previousStatus = task.status;
     Object.assign(task, updateTaskDto);
 
-    const updatedTask = await this.taskRepository.save(task);
+    await this.taskRepository.save(task);
 
-    // Create history
     const changes = Object.keys(updateTaskDto).join(', ');
     await this.historyRepository.save({
       taskId: id,
@@ -146,9 +145,6 @@ export class TasksService {
   async remove(id: string, userId: string): Promise<void> {
     const task = await this.findOne(id);
 
-    await this.taskRepository.remove(task);
-
-    // Create history
     await this.historyRepository.save({
       taskId: id,
       userId,
@@ -156,7 +152,8 @@ export class TasksService {
       details: `Task "${task.title}" deleted`,
     });
 
-    // Emit notification
+    await this.taskRepository.remove(task);
+
     this.notificationsClient.emit('task.deleted', {
       taskId: id,
       title: task.title,
