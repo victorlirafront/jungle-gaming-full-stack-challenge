@@ -2090,8 +2090,10 @@ anymatch@^3.0.3, anymatch@~3.1.2:
     "@nestjs/jwt" "^11.0.1"
     "@nestjs/microservices" "^10.3.0"
     "@nestjs/platform-express" "^10.3.0"
+    "@nestjs/platform-socket.io" "^10.3.0"
     "@nestjs/swagger" "^7.3.0"
     "@nestjs/throttler" "^5.1.1"
+    "@nestjs/websockets" "^10.3.0"
     "@repo/types" "*"
     "@repo/utils" "*"
     amqp-connection-manager "^4.1.14"
@@ -2100,6 +2102,7 @@ anymatch@^3.0.3, anymatch@~3.1.2:
     class-validator "^0.14.1"
     reflect-metadata "^0.2.1"
     rxjs "^7.8.1"
+    socket.io "^4.7.5"
 
 app-root-path@^3.1.0:
   version "3.1.0"
