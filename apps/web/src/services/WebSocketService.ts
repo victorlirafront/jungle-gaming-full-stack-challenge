@@ -24,7 +24,7 @@ export class WebSocketService {
       return;
     }
 
-    const wsUrl = import.meta.env.VITE_WS_URL || 'http://localhost:3004';
+    const wsUrl = import.meta.env.VITE_WS_URL || 'http://localhost:3001';
 
     this.socket = io(wsUrl, {
       transports: ['websocket', 'polling'],
@@ -34,18 +34,15 @@ export class WebSocketService {
     });
 
     this.socket.on('connect', () => {
-      console.log('✅ WebSocket connected');
       this.connected = true;
       this.socket?.emit('authenticate', { userId });
     });
 
     this.socket.on('disconnect', () => {
-      console.log('❌ WebSocket disconnected');
       this.connected = false;
     });
 
     this.socket.on('notification', (notification: Notification) => {
-      console.log('📬 New notification:', notification);
       this.listeners.forEach((callback) => callback(notification));
     });
 

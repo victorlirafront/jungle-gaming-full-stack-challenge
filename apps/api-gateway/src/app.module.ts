@@ -4,6 +4,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from './modules/auth/auth.module';
 import { TasksModule } from './modules/tasks/tasks.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ConfigModule, ConfigService } from './config';
 import { RpcExceptionInterceptor } from './common';
 
@@ -32,6 +33,7 @@ import { RpcExceptionInterceptor } from './common';
     }),
     AuthModule,
     TasksModule,
+    NotificationsModule,
   ],
   controllers: [],
   providers: [

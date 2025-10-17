@@ -7,8 +7,10 @@ import {
   MessageBody,
   ConnectedSocket,
 } from '@nestjs/websockets';
+import { Inject } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 import { Server, Socket } from 'socket.io';
-import { NotificationsService, CreateNotificationDto } from './notifications.service';
+import { firstValueFrom } from 'rxjs';
 
 @WebSocketGateway({
   cors: {
@@ -24,14 +26,21 @@ export class NotificationsGateway
 
   private userSockets: Map<string, Set<string>> = new Map();
 
-  constructor(private notificationsService: NotificationsService) {}
+  constructor(
+    @Inject('NOTIFICATIONS_SERVICE')
+    private notificationsClient: ClientProxy,
+  ) {}
 
   handleConnection(client: Socket) {
-    console.log(`Client connected: ${client.id}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Client connected: ${client.id}`);
+    }
   }
 
   handleDisconnect(client: Socket) {
-    console.log(`Client disconnected: ${client.id}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Client disconnected: ${client.id}`);
+    }
     this.userSockets.forEach((sockets, userId) => {
       if (sockets.has(client.id)) {
         sockets.delete(client.id);
@@ -56,7 +65,9 @@ export class NotificationsGateway
     this.userSockets.get(userId)!.add(client.id);
     client.join(`user:${userId}`);
 
-    console.log(`User ${userId} authenticated with socket ${client.id}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`User ${userId} authenticated with socket ${client.id}`);
+    }
 
     return { success: true };
   }
@@ -66,9 +77,8 @@ export class NotificationsGateway
     @MessageBody() data: { userId: string; limit?: number },
     @ConnectedSocket() _client: Socket,
   ) {
-    const notifications = await this.notificationsService.findAllByUser(
-      data.userId,
-      data.limit,
+    const notifications = await firstValueFrom(
+      this.notificationsClient.send('notifications.findAll', data),
     );
     return notifications;
   }
@@ -78,9 +88,8 @@ export class NotificationsGateway
     @MessageBody() data: { notificationId: string; userId: string },
     @ConnectedSocket() _client: Socket,
   ) {
-    await this.notificationsService.markAsRead(
-      data.notificationId,
-      data.userId,
+    await firstValueFrom(
+      this.notificationsClient.send('notifications.markAsRead', data),
     );
     return { success: true };
   }
@@ -90,29 +99,14 @@ export class NotificationsGateway
     @MessageBody() data: { userId: string },
     @ConnectedSocket() _client: Socket,
   ) {
-    await this.notificationsService.markAllAsRead(data.userId);
+    await firstValueFrom(
+      this.notificationsClient.send('notifications.markAllAsRead', data),
+    );
     return { success: true };
   }
 
-  async sendNotificationToUser(
-    userId: string,
-    notification: CreateNotificationDto,
-  ) {
-    const savedNotification = await this.notificationsService.create(notification);
-
-    this.server.to(`user:${userId}`).emit('notification', savedNotification);
-
-    return savedNotification;
-  }
-
-  async broadcastToUsers(
-    userIds: string[],
-    notification: Omit<CreateNotificationDto, 'userId'>,
-  ) {
-    const promises = userIds.map((userId) =>
-      this.sendNotificationToUser(userId, { ...notification, userId }),
-    );
-    return Promise.all(promises);
+  async sendNotificationToUser(userId: string, notification: any) {
+    this.server.to(`user:${userId}`).emit('notification', notification);
   }
 }
 
