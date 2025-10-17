@@ -62,6 +62,15 @@ export interface FilterTasksRequest {
   priority?: TaskPriority;
   assignedUserId?: string;
   creatorId?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface PaginatedTasksResponse {
+  data: Task[];
+  total: number;
+  limit: number;
+  offset: number;
 }
 
 export interface CreateCommentRequest {

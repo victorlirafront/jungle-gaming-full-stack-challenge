@@ -17,19 +17,34 @@ export function TaskList() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalTasks, setTotalTasks] = useState(0);
+  const itemsPerPage = 9;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, priorityFilter]);
 
   useEffect(() => {
     loadTasks();
-  }, []);
+  }, [currentPage]);
 
   const loadTasks = async () => {
     try {
       setLoading(true);
-      const data = await tasksService.findAll();
-      setTasks(data);
+      const offset = (currentPage - 1) * itemsPerPage;
+      const response = await tasksService.findAll({
+        status: statusFilter || undefined,
+        priority: priorityFilter || undefined,
+        limit: itemsPerPage,
+        offset,
+      });
+      setTasks(response.data);
+      setTotalTasks(response.total);
     } catch (error) {
       console.error('Error loading tasks:', error);
       setTasks([]);
+      setTotalTasks(0);
     } finally {
       setLoading(false);
     }
@@ -57,6 +72,7 @@ export function TaskList() {
         status: newTask.status,
         dueDate: newTask.deadline,
       });
+      setCurrentPage(1);
       await loadTasks();
       setShowForm(false);
     } catch (error) {
@@ -138,9 +154,35 @@ export function TaskList() {
         </div>
       )}
 
-      <div className="text-sm text-muted-foreground text-center">
-        Mostrando {filteredTasks.length} de {tasks.length} tarefa(s)
-      </div>
+      {!loading && totalTasks > 0 && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">
+            Mostrando {filteredTasks.length} de {totalTasks} tarefa(s)
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+            >
+              ← Anterior
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              Página {currentPage} de {Math.ceil(totalTasks / itemsPerPage)}
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setCurrentPage((prev) => prev + 1)}
+              disabled={currentPage >= Math.ceil(totalTasks / itemsPerPage)}
+            >
+              Próxima →
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
