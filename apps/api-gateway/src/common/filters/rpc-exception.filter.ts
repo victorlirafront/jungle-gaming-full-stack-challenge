@@ -6,36 +6,73 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { throwError } from 'rxjs';
+
+interface RpcError {
+  name?: string;
+  message?: string;
+  status?: number;
+  statusCode?: number;
+}
+
+interface ExceptionWithResponse {
+  response?: {
+    message?: string;
+    error?: string;
+    statusCode?: number;
+  };
+  status?: number;
+  message?: string;
+  name?: string;
+}
+
+interface ExceptionWithError {
+  error?: RpcError;
+}
 
 @Catch()
 export class RpcExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(RpcExceptionFilter.name);
 
-  catch(exception: any, host: ArgumentsHost) {
+  private hasResponse(exception: unknown): exception is ExceptionWithResponse {
+    return typeof exception === 'object' && exception !== null && 'response' in exception;
+  }
+
+  private hasError(exception: unknown): exception is ExceptionWithError {
+    return typeof exception === 'object' && exception !== null && 'error' in exception;
+  }
+
+  private hasStatus(exception: unknown): exception is { status: number } {
+    return typeof exception === 'object' && exception !== null && 'status' in exception;
+  }
+
+  private hasMessage(exception: unknown): exception is { message: string } {
+    return typeof exception === 'object' && exception !== null && 'message' in exception;
+  }
+
+  private hasName(exception: unknown): exception is { name: string } {
+    return typeof exception === 'object' && exception !== null && 'name' in exception;
+  }
+
+  catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    // Log the error with full details
     this.logger.error('RPC Exception caught:', JSON.stringify(exception, null, 2));
 
-    // Handle exceptions with response property (from microservices)
-    if (exception?.response) {
-      const { response: errorResponse } = exception;
-      const status = exception.status || errorResponse.statusCode || HttpStatus.INTERNAL_SERVER_ERROR;
+    if (this.hasResponse(exception)) {
+      const errorResponse = exception.response;
+      const status = exception.status || errorResponse?.statusCode || HttpStatus.INTERNAL_SERVER_ERROR;
 
       return response.status(status).json({
         statusCode: status,
-        message: errorResponse.message || exception.message || 'Internal server error',
-        error: errorResponse.error || exception.name?.replace('Exception', '') || 'Error',
+        message: errorResponse?.message || (this.hasMessage(exception) ? exception.message : 'Internal server error'),
+        error: errorResponse?.error || (this.hasName(exception) ? exception.name.replace('Exception', '') : 'Error'),
       });
     }
 
-    // Handle RPC errors from microservices (legacy format)
-    if (exception?.error) {
+    if (this.hasError(exception)) {
       const error = exception.error;
 
-      // Map exception names to HTTP status codes
       const statusMap: Record<string, number> = {
         ConflictException: HttpStatus.CONFLICT,
         NotFoundException: HttpStatus.NOT_FOUND,
@@ -44,23 +81,22 @@ export class RpcExceptionFilter implements ExceptionFilter {
         BadRequestException: HttpStatus.BAD_REQUEST,
       };
 
-      const status = statusMap[error.name] || HttpStatus.INTERNAL_SERVER_ERROR;
+      const status = (error?.name && statusMap[error.name]) || HttpStatus.INTERNAL_SERVER_ERROR;
 
       return response.status(status).json({
         statusCode: status,
-        message: error.message || 'Internal server error',
-        error: error.name?.replace('Exception', '') || 'Error',
+        message: error?.message || 'Internal server error',
+        error: error?.name?.replace('Exception', '') || 'Error',
       });
     }
 
-    // Handle standard HTTP exceptions
-    const status = exception?.status || HttpStatus.INTERNAL_SERVER_ERROR;
-    const message = exception?.message || 'Internal server error';
+    const status = this.hasStatus(exception) ? exception.status : HttpStatus.INTERNAL_SERVER_ERROR;
+    const message = this.hasMessage(exception) ? exception.message : 'Internal server error';
 
     return response.status(status).json({
       statusCode: status,
       message,
-      error: exception?.name || 'Error',
+      error: this.hasName(exception) ? exception.name : 'Error',
     });
   }
 }
