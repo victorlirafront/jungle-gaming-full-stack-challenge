@@ -6,6 +6,7 @@ import { TaskFilters } from '@/components/TaskFilter';
 import { TaskForm } from '@/components/TaskForm';
 import { Button } from '@/components/ui/Button';
 import { TaskFormData } from '@/validations';
+import { TaskStatus, TaskPriority } from '@repo/types';
 import type { Task } from '@/types/task.types';
 
 
@@ -15,8 +16,8 @@ export function TaskList() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [priorityFilter, setPriorityFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState<TaskStatus | ''>('');
+  const [priorityFilter, setPriorityFilter] = useState<TaskPriority | ''>('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalTasks, setTotalTasks] = useState(0);
   const itemsPerPage = 9;
@@ -34,8 +35,8 @@ export function TaskList() {
       setLoading(true);
       const offset = (currentPage - 1) * itemsPerPage;
       const response = await tasksService.findAll({
-        status: statusFilter || undefined,
-        priority: priorityFilter || undefined,
+        status: statusFilter ? (statusFilter as TaskStatus) : undefined,
+        priority: priorityFilter ? (priorityFilter as TaskPriority) : undefined,
         limit: itemsPerPage,
         offset,
       });
@@ -97,6 +98,14 @@ export function TaskList() {
     navigate({ to: '/tasks/$taskId', params: { taskId } });
   };
 
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value as TaskStatus | '');
+  };
+
+  const handlePriorityFilterChange = (value: string) => {
+    setPriorityFilter(value as TaskPriority | '');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -122,9 +131,9 @@ export function TaskList() {
         search={search}
         onSearchChange={setSearch}
         statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
+        onStatusChange={handleStatusFilterChange}
         priorityFilter={priorityFilter}
-        onPriorityChange={setPriorityFilter}
+        onPriorityChange={handlePriorityFilterChange}
       />
 
       {loading ? (
