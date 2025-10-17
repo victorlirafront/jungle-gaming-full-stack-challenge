@@ -105,7 +105,10 @@ export class NotificationsGateway
     return { success: true };
   }
 
-  async sendNotificationToUser(userId: string, notification: any) {
+  async sendNotificationToUser(
+    userId: string,
+    notification: Record<string, unknown>
+  ) {
     this.server.to(`user:${userId}`).emit('notification', notification);
   }
 }
