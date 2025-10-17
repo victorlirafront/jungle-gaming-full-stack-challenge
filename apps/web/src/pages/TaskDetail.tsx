@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
-import { tasksService } from '@/services';
+import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { CommentList } from '@/components/CommentList';
 import { TaskPriority, TaskStatus } from '@repo/types';
-import type { Task, Comment } from '@/types/task.types';
+import { useTask, useTaskComments, useCreateComment } from '@/hooks/useTasks';
 
 interface TaskDetailProps {
   taskId: string;
@@ -27,38 +26,12 @@ const statusColors = {
 };
 
 export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
-  const [task, setTask] = useState<Task | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: task, isLoading } = useTask(taskId);
+  const { data: comments = [] } = useTaskComments(taskId);
+  const createCommentMutation = useCreateComment(taskId);
   const [addingComment, setAddingComment] = useState(false);
 
-  useEffect(() => {
-    loadTask();
-    loadComments();
-  }, [taskId]);
-
-  const loadTask = async () => {
-    try {
-      setLoading(true);
-      const data = await tasksService.findOne(taskId);
-      setTask(data);
-    } catch (error) {
-      console.error('Error loading task:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadComments = async () => {
-    try {
-      const data = await tasksService.getComments(taskId);
-      setComments(data);
-    } catch (error) {
-      console.error('Error loading comments:', error);
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground">Carregando tarefa...</p>
@@ -84,8 +57,7 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
 
     try {
       setAddingComment(true);
-      await tasksService.createComment(taskId, { content });
-      await loadComments();
+      await createCommentMutation.mutateAsync({ content });
     } catch (error) {
       console.error('Error adding comment:', error);
       alert('Erro ao adicionar comentário. Tente novamente.');
