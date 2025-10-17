@@ -1,55 +1,39 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { tasksService } from '@/services';
 import { TaskCard } from '@/components/TaskCard';
 import { TaskFilters } from '@/components/TaskFilter';
 import { TaskForm } from '@/components/TaskForm';
 import { Button } from '@/components/ui/Button';
 import { TaskFormData } from '@/validations';
 import { TaskStatus, TaskPriority } from '@repo/types';
-import type { Task } from '@/types/task.types';
-
+import { useTasks, useCreateTask, useDeleteTask } from '@/hooks/useTasks';
 
 export function TaskList() {
   const navigate = useNavigate();
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<TaskStatus | ''>('');
   const [priorityFilter, setPriorityFilter] = useState<TaskPriority | ''>('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalTasks, setTotalTasks] = useState(0);
   const itemsPerPage = 9;
 
   useEffect(() => {
     setCurrentPage(1);
   }, [statusFilter, priorityFilter]);
 
-  useEffect(() => {
-    loadTasks();
-  }, [currentPage]);
+  const offset = (currentPage - 1) * itemsPerPage;
+  const { data: tasksData, isLoading } = useTasks({
+    status: statusFilter ? (statusFilter as TaskStatus) : undefined,
+    priority: priorityFilter ? (priorityFilter as TaskPriority) : undefined,
+    limit: itemsPerPage,
+    offset,
+  });
 
-  const loadTasks = async () => {
-    try {
-      setLoading(true);
-      const offset = (currentPage - 1) * itemsPerPage;
-      const response = await tasksService.findAll({
-        status: statusFilter ? (statusFilter as TaskStatus) : undefined,
-        priority: priorityFilter ? (priorityFilter as TaskPriority) : undefined,
-        limit: itemsPerPage,
-        offset,
-      });
-      setTasks(response.data);
-      setTotalTasks(response.total);
-    } catch (error) {
-      console.error('Error loading tasks:', error);
-      setTasks([]);
-      setTotalTasks(0);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const createTaskMutation = useCreateTask();
+  const deleteTaskMutation = useDeleteTask();
+
+  const tasks = tasksData?.data || [];
+  const totalTasks = tasksData?.total || 0;
 
   const filteredTasks = useMemo(() => {
     return tasks.filter((task) => {
@@ -66,7 +50,7 @@ export function TaskList() {
 
   const handleCreateTask = async (newTask: TaskFormData) => {
     try {
-      await tasksService.create({
+      await createTaskMutation.mutateAsync({
         title: newTask.title,
         description: newTask.description,
         priority: newTask.priority,
@@ -74,7 +58,6 @@ export function TaskList() {
         dueDate: newTask.deadline,
       });
       setCurrentPage(1);
-      await loadTasks();
       setShowForm(false);
     } catch (error) {
       console.error('Error creating task:', error);
@@ -85,8 +68,7 @@ export function TaskList() {
   const handleDeleteTask = async (taskId: string) => {
     if (confirm('Tem certeza que deseja deletar esta tarefa?')) {
       try {
-        await tasksService.remove(taskId);
-        await loadTasks();
+        await deleteTaskMutation.mutateAsync(taskId);
       } catch (error) {
         console.error('Error deleting task:', error);
         alert('Erro ao deletar tarefa. Tente novamente.');
@@ -136,7 +118,7 @@ export function TaskList() {
         onPriorityChange={handlePriorityFilterChange}
       />
 
-      {loading ? (
+      {isLoading ? (
         <div className="text-center py-12">
           <p className="text-muted-foreground">Carregando tarefas...</p>
         </div>
@@ -163,7 +145,7 @@ export function TaskList() {
         </div>
       )}
 
-      {!loading && totalTasks > 0 && (
+      {!isLoading && totalTasks > 0 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
             Mostrando {filteredTasks.length} de {totalTasks} tarefa(s)
