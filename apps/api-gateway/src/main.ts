@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { Transport, MicroserviceOptions } from '@nestjs/microservices';
 import { AppModule } from './app.module';
 import { ConfigService } from './config';
 import { RpcExceptionFilter } from './common';
@@ -8,6 +9,17 @@ import { RpcExceptionFilter } from './common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [process.env.RABBITMQ_URL || 'amqp://admin:admin@rabbitmq:5672'],
+      queue: 'gateway_queue',
+      queueOptions: {
+        durable: true,
+      },
+    },
+  });
 
   app.setGlobalPrefix('api');
 
@@ -33,6 +45,8 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup(swaggerConfig.path, app, document);
+
+  await app.startAllMicroservices();
 
   const { port } = configService.appConfig;
   await app.listen(port, '0.0.0.0');
