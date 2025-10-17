@@ -4,6 +4,7 @@ import type {
   CreateTaskRequest,
   UpdateTaskRequest,
   FilterTasksRequest,
+  PaginatedTasksResponse,
   Comment,
   CreateCommentRequest,
   TaskHistory,
@@ -16,15 +17,17 @@ export class TasksService {
     return httpClient.post<Task>(this.endpoint, data);
   }
 
-  async findAll(filters?: FilterTasksRequest): Promise<Task[]> {
+  async findAll(filters?: FilterTasksRequest): Promise<PaginatedTasksResponse> {
     const queryParams = new URLSearchParams();
     if (filters?.status) queryParams.append('status', filters.status);
     if (filters?.priority) queryParams.append('priority', filters.priority);
     if (filters?.assignedUserId) queryParams.append('assignedUserId', filters.assignedUserId);
     if (filters?.creatorId) queryParams.append('creatorId', filters.creatorId);
+    if (filters?.limit) queryParams.append('limit', filters.limit.toString());
+    if (filters?.offset) queryParams.append('offset', filters.offset.toString());
 
     const query = queryParams.toString();
-    return httpClient.get<Task[]>(`${this.endpoint}${query ? `?${query}` : ''}`);
+    return httpClient.get<PaginatedTasksResponse>(`${this.endpoint}${query ? `?${query}` : ''}`);
   }
 
   async findOne(id: string): Promise<Task> {

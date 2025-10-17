@@ -65,7 +65,12 @@ export class TasksService {
     return this.findOne(savedTask.id);
   }
 
-  async findAll(filterDto: FilterTasksDto): Promise<Task[]> {
+  async findAll(filterDto: FilterTasksDto): Promise<{
+    data: Task[];
+    total: number;
+    limit: number;
+    offset: number;
+  }> {
     const query = this.taskRepository
       .createQueryBuilder('task')
       .leftJoinAndSelect('task.assignments', 'assignments')
@@ -93,7 +98,20 @@ export class TasksService {
       });
     }
 
-    return query.getMany();
+    const limit = filterDto.limit || 50;
+    const offset = filterDto.offset || 0;
+
+    query.take(limit).skip(offset);
+    query.orderBy('task.createdAt', 'DESC');
+
+    const [data, total] = await query.getManyAndCount();
+
+    return {
+      data,
+      total,
+      limit,
+      offset,
+    };
   }
 
   async findOne(id: string): Promise<Task> {
