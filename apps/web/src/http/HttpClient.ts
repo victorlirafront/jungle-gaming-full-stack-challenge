@@ -13,9 +13,14 @@ export class HttpClient {
   private readonly baseUrl: string;
   private isRefreshing = false;
   private refreshSubscribers: Array<(token: string) => void> = [];
+  private onTokenExpiredCallback?: () => void;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl.replace(/\/$/, '');
+  }
+
+  setOnTokenExpired(callback: () => void) {
+    this.onTokenExpiredCallback = callback;
   }
 
   private onRefreshed(token: string) {
@@ -131,6 +136,11 @@ export class HttpClient {
     if (!response.ok) {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
+
+      if (this.onTokenExpiredCallback) {
+        this.onTokenExpiredCallback();
+      }
+
       throw new HttpError('Refresh token expired', 401);
     }
 
