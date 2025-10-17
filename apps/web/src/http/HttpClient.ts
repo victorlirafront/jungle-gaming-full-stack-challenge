@@ -197,7 +197,7 @@ export class HttpClient {
       return {} as T;
     }
 
-    let data: any;
+    let data: unknown;
     try {
       if (isJson) {
         const text = await res.text();
