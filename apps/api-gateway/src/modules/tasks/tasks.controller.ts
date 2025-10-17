@@ -13,7 +13,7 @@ import {
 import { ClientProxy } from '@nestjs/microservices';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { firstValueFrom } from 'rxjs';
-import { JwtAuthGuard, CurrentUser } from '../../common';
+import { JwtAuthGuard, CurrentUser, JwtPayload } from '../../common';
 import {
   CreateTaskDto,
   UpdateTaskDto,
@@ -35,7 +35,7 @@ export class TasksController {
   @Post()
   @ApiOperation({ summary: 'Create a new task' })
   @ApiResponse({ status: 201, description: 'Task created successfully' })
-  async create(@Body() createTaskDto: CreateTaskDto, @CurrentUser() user: any) {
+  async create(@Body() createTaskDto: CreateTaskDto, @CurrentUser() user: JwtPayload) {
     return firstValueFrom(
       this.tasksClient.send('tasks.create', {
         data: createTaskDto,
@@ -66,7 +66,7 @@ export class TasksController {
   async update(
     @Param('id') id: string,
     @Body() updateTaskDto: UpdateTaskDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: JwtPayload
   ) {
     return firstValueFrom(
       this.tasksClient.send('tasks.update', {
@@ -81,7 +81,7 @@ export class TasksController {
   @ApiOperation({ summary: 'Delete task' })
   @ApiResponse({ status: 200, description: 'Task deleted successfully' })
   @ApiResponse({ status: 404, description: 'Task not found' })
-  async remove(@Param('id') id: string, @CurrentUser() user: any) {
+  async remove(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return firstValueFrom(
       this.tasksClient.send('tasks.remove', { id, userId: user.sub })
     );
@@ -94,7 +94,7 @@ export class TasksController {
   async createComment(
     @Param('id') taskId: string,
     @Body() createCommentDto: CreateCommentDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: JwtPayload
   ) {
     return firstValueFrom(
       this.tasksClient.send('tasks.createComment', {

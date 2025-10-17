@@ -27,8 +27,8 @@ import { RpcExceptionInterceptor } from './common';
         const config = configService.jwtConfig;
         return {
           secret: config.secret,
-          signOptions: { expiresIn: config.expiresIn as any },
-        };
+          signOptions: { expiresIn: config.expiresIn },
+        } as any;
       },
     }),
     AuthModule,

@@ -2,6 +2,12 @@ import { Controller, Inject } from '@nestjs/common';
 import { MessagePattern, Payload, ClientProxy } from '@nestjs/microservices';
 import { NotificationsService } from './notifications.service';
 import { NotificationType } from '../../entities/notification.entity';
+import {
+  TaskCreatedEvent,
+  TaskStatusChangedEvent,
+  TaskCommentedEvent,
+  TaskDeletedEvent,
+} from './interfaces/task-events.interface';
 
 @Controller()
 export class NotificationsController {
@@ -12,7 +18,7 @@ export class NotificationsController {
   ) {}
 
   @MessagePattern('task.created')
-  async handleTaskCreated(@Payload() data: any) {
+  async handleTaskCreated(@Payload() data: TaskCreatedEvent) {
     const { taskId, title, creatorId, assignedUserIds } = data;
 
     if (assignedUserIds && assignedUserIds.length > 0) {
@@ -36,7 +42,7 @@ export class NotificationsController {
   }
 
   @MessagePattern('task.status_changed')
-  async handleTaskStatusChanged(@Payload() data: any) {
+  async handleTaskStatusChanged(@Payload() data: TaskStatusChangedEvent) {
     const { taskId, title, oldStatus, newStatus, userId } = data;
 
     const notification = await this.notificationsService.create({
@@ -56,15 +62,15 @@ export class NotificationsController {
   }
 
   @MessagePattern('task.commented')
-  async handleTaskCommented(@Payload() data: any) {
+  async handleTaskCommented(@Payload() data: TaskCommentedEvent) {
     const { taskId, commentId, authorId, assignedUserIds, creatorId } = data;
 
     const usersToNotify = new Set<string>();
-    
+
     if (creatorId && creatorId !== authorId) {
       usersToNotify.add(creatorId);
     }
-    
+
     if (assignedUserIds && assignedUserIds.length > 0) {
       assignedUserIds.forEach((userId: string) => {
         if (userId !== authorId) {
@@ -94,7 +100,7 @@ export class NotificationsController {
   }
 
   @MessagePattern('task.deleted')
-  async handleTaskDeleted(@Payload() data: any) {
+  async handleTaskDeleted(@Payload() data: TaskDeletedEvent) {
     const { taskId, title, userId } = data;
 
     const notification = await this.notificationsService.create({
