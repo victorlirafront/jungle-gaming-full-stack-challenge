@@ -9,6 +9,6 @@ export default new DataSource({
   database: process.env.DB_NAME || 'challenge_db',
   entities: ['src/**/*.entity.ts'],
   migrations: ['migrations/*.ts'],
-  synchronize: false,
+  synchronize: process.env.NODE_ENV === 'development',
 });
 
