@@ -11,16 +11,21 @@ export class AuthController {
   async register(@Payload() registerDto: RegisterDto) {
     try {
       return await this.authService.register(registerDto);
-    } catch (error: any) {
+    } catch (error) {
+      const errorObj = error as {
+        message?: string;
+        name?: string;
+        status?: number;
+      };
       throw new RpcException({
         response: {
-          message: error.message || 'Internal server error',
-          error: error.name?.replace('Exception', '') || 'Error',
-          statusCode: error.status || 500,
+          message: errorObj.message || 'Internal server error',
+          error: errorObj.name?.replace('Exception', '') || 'Error',
+          statusCode: errorObj.status || 500,
         },
-        status: error.status || 500,
-        message: error.message || 'Internal server error',
-        name: error.name,
+        status: errorObj.status || 500,
+        message: errorObj.message || 'Internal server error',
+        name: errorObj.name,
       });
     }
   }
