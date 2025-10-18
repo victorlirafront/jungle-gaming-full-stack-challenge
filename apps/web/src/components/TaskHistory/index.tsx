@@ -1,6 +1,7 @@
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import type { TaskHistory } from '@/types/task.types';
+import { useUsers } from '@/hooks/useUsers';
 
 interface TaskHistoryProps {
   history: TaskHistory[];
@@ -22,6 +23,12 @@ const actionLabels = {
 };
 
 export function TaskHistory({ history, isLoading }: TaskHistoryProps) {
+  const { data: allUsers = [] } = useUsers();
+
+  const getUserById = (userId: string) => {
+    return allUsers.find(u => u.id === userId);
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -55,32 +62,38 @@ export function TaskHistory({ history, isLoading }: TaskHistoryProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {history.map((entry) => (
-            <div
-              key={entry.id}
-              className="flex gap-3 pb-4 border-b last:border-b-0 last:pb-0"
-            >
-              <div className="flex-shrink-0 mt-1">
-                <Badge className={actionColors[entry.action as keyof typeof actionColors] || 'bg-gray-100 text-gray-800'}>
-                  {actionLabels[entry.action as keyof typeof actionLabels] || entry.action}
-                </Badge>
+          {history.map((entry) => {
+            const user = getUserById(entry.userId);
+            const userName = user?.username || 'Usuário';
+
+            return (
+              <div
+                key={entry.id}
+                className="flex gap-3 pb-4 border-b last:border-b-0 last:pb-0"
+              >
+                <div className="flex-shrink-0 mt-1">
+                  <Badge className={actionColors[entry.action as keyof typeof actionColors] || 'bg-gray-100 text-gray-800'}>
+                    {actionLabels[entry.action as keyof typeof actionLabels] || entry.action}
+                  </Badge>
+                </div>
+                <div className="flex-1 min-w-0">
+                  {entry.details && (
+                    <p className="text-sm text-gray-700 mb-1">{entry.details}</p>
+                  )}
+                  <p className="text-xs text-gray-500">
+                    por <span className="font-medium">{userName}</span> em{' '}
+                    {new Date(entry.createdAt).toLocaleString('pt-BR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                {entry.details && (
-                  <p className="text-sm text-gray-700 mb-1">{entry.details}</p>
-                )}
-                <p className="text-xs text-gray-500">
-                  {new Date(entry.createdAt).toLocaleString('pt-BR', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </CardContent>
     </Card>

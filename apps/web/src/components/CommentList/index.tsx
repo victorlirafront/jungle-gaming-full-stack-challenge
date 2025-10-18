@@ -3,6 +3,7 @@ import { Comment } from '@/types/task.types';
 import { Card, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Textarea } from '../ui/Textarea';
+import { useUsers } from '@/hooks/useUsers';
 
 interface CommentListProps {
   comments: Comment[];
@@ -11,6 +12,11 @@ interface CommentListProps {
 
 export function CommentList({ comments, onAddComment }: CommentListProps) {
   const [newComment, setNewComment] = useState('');
+  const { data: allUsers = [] } = useUsers();
+
+  const getUserById = (userId: string) => {
+    return allUsers.find(u => u.id === userId);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,28 +54,34 @@ export function CommentList({ comments, onAddComment }: CommentListProps) {
         </p>
       ) : (
         <div className="space-y-3">
-          {comments.map((comment) => (
-            <Card key={comment.id}>
-              <CardContent className="pt-4">
-                <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-sm font-medium">
-                    {comment.authorId.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm">User {comment.authorId.slice(0, 8)}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(comment.createdAt).toLocaleString('pt-BR')}
-                    </span>
+          {comments.map((comment) => {
+            const author = getUserById(comment.authorId);
+            const authorName = author?.username || 'Usuário';
+            const authorInitial = authorName.charAt(0).toUpperCase();
+
+            return (
+              <Card key={comment.id}>
+                <CardContent className="pt-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="text-sm font-medium">
+                        {authorInitial}
+                      </span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm">{authorName}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(comment.createdAt).toLocaleString('pt-BR')}
+                        </span>
+                      </div>
+                      <p className="text-sm mt-1">{comment.content}</p>
+                    </div>
                   </div>
-                  <p className="text-sm mt-1">{comment.content}</p>
-                </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>
