@@ -6,6 +6,7 @@ interface NotificationsState {
   unreadCount: number;
   isConnected: boolean;
   isLoading: boolean;
+  unsubscribe: (() => void) | null;
 
   initializeWebSocket: (userId: string) => void;
   disconnectWebSocket: () => void;
@@ -21,21 +22,30 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
   unreadCount: 0,
   isConnected: false,
   isLoading: false,
+  unsubscribe: null,
 
   initializeWebSocket: (userId: string) => {
+    if (get().unsubscribe) {
+      get().unsubscribe?.();
+    }
+
     webSocketService.connect(userId);
 
-    webSocketService.onNotification((notification) => {
+    const unsubscribe = webSocketService.onNotification((notification) => {
       get().addNotification(notification);
     });
 
-    set({ isConnected: true });
+    set({ isConnected: true, unsubscribe });
     get().loadNotifications(userId);
   },
 
   disconnectWebSocket: () => {
+    if (get().unsubscribe) {
+      get().unsubscribe?.();
+    }
+    
     webSocketService.disconnect();
-    set({ isConnected: false, notifications: [], unreadCount: 0 });
+    set({ isConnected: false, notifications: [], unreadCount: 0, unsubscribe: null });
   },
 
   loadNotifications: async (userId: string) => {
@@ -81,9 +91,15 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
   },
 
   addNotification: (notification: Notification) => {
-    set((state) => ({
-      notifications: [notification, ...state.notifications],
-    }));
+    set((state) => {
+      const exists = state.notifications.some((n) => n.id === notification.id);
+      if (exists) {
+        return state;
+      }
+      return {
+        notifications: [notification, ...state.notifications],
+      };
+    });
     get().updateUnreadCount();
   },
 
