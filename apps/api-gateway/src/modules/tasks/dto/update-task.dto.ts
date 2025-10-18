@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsEnum, IsDateString, MaxLength } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsDateString, IsArray, MaxLength } from 'class-validator';
 import { TaskPriority, TaskStatus } from '@repo/types';
 
 export class UpdateTaskDto {
@@ -28,5 +28,11 @@ export class UpdateTaskDto {
   @IsEnum(TaskStatus)
   @IsOptional()
   status?: TaskStatus;
+
+  @ApiPropertyOptional({ type: [String], example: ['uuid-1', 'uuid-2'] })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  assignedUserIds?: string[];
 }
 
