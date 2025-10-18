@@ -136,17 +136,19 @@ export class TasksService {
     }
 
     const previousStatus = task.status;
-    const { assignedUserIds, ...taskUpdates } = updateTaskDto;
+    const { assignedUserIds: newAssignedUserIds, ...taskUpdates } = updateTaskDto;
 
     Object.assign(task, taskUpdates);
-
     await this.taskRepository.save(task);
 
-    if (assignedUserIds !== undefined) {
+    const previousAssignedUserIds = task.assignments?.map((a) => a.userId) || [];
+    let currentAssignedUserIds = previousAssignedUserIds;
+
+    if (newAssignedUserIds !== undefined) {
       await this.assignmentRepository.delete({ taskId: id });
 
-      if (assignedUserIds.length > 0) {
-        const assignments = assignedUserIds.map((assignedUserId) =>
+      if (newAssignedUserIds.length > 0) {
+        const assignments = newAssignedUserIds.map((assignedUserId) =>
           this.assignmentRepository.create({
             taskId: id,
             userId: assignedUserId,
@@ -155,22 +157,38 @@ export class TasksService {
         );
         await this.assignmentRepository.save(assignments);
       }
+
+      const newlyAssignedUsers = newAssignedUserIds.filter(
+        (uid) => !previousAssignedUserIds.includes(uid)
+      );
+
+      if (newlyAssignedUsers.length > 0) {
+        this.notificationsClient.emit('task.assigned', {
+          taskId: id,
+          title: task.title,
+          creatorId: task.creatorId,
+          assignedUserIds: newlyAssignedUsers,
+        });
+      }
+
+      currentAssignedUserIds = newAssignedUserIds;
     }
 
-    const changes = Object.keys(updateTaskDto).join(', ');
+    const changesList = Object.keys(updateTaskDto);
     await this.historyRepository.save({
       taskId: id,
       userId,
       action: 'UPDATED',
-      details: `Updated: ${changes}`,
+      details: `Updated: ${changesList.join(', ')}`,
     });
 
     this.notificationsClient.emit('task.updated', {
       taskId: id,
       title: task.title,
-      changes: Object.keys(updateTaskDto),
+      changes: changesList,
       userId,
-      assignedUserIds,
+      assignedUserIds: currentAssignedUserIds,
+      creatorId: task.creatorId,
     });
 
     if (updateTaskDto.status && updateTaskDto.status !== previousStatus) {
@@ -180,6 +198,8 @@ export class TasksService {
         oldStatus: previousStatus,
         newStatus: updateTaskDto.status,
         userId,
+        assignedUserIds: currentAssignedUserIds,
+        creatorId: task.creatorId,
       });
     }
 

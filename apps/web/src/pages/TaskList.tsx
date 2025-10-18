@@ -59,6 +59,7 @@ export function TaskList() {
         priority: newTask.priority,
         status: newTask.status,
         dueDate: newTask.deadline,
+        assignedUserIds: newTask.assignedUserIds,
       });
       setCurrentPage(1);
       setShowForm(false);
@@ -80,6 +81,7 @@ export function TaskList() {
           priority: updatedTask.priority,
           status: updatedTask.status,
           dueDate: updatedTask.deadline,
+          assignedUserIds: updatedTask.assignedUserIds,
         },
       });
       setEditingTask(null);
@@ -151,6 +153,7 @@ export function TaskList() {
             priority: editingTask.priority,
             status: editingTask.status,
             deadline: editingTask.dueDate ? new Date(editingTask.dueDate).toISOString().split('T')[0] : '',
+            assignedUserIds: editingTask.assignments?.map(a => a.userId) || [],
           }}
         />
       )}

@@ -84,6 +84,7 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
           priority: updatedTask.priority,
           status: updatedTask.status,
           dueDate: updatedTask.deadline,
+          assignedUserIds: updatedTask.assignedUserIds,
         },
       });
       setIsEditing(false);
@@ -109,6 +110,7 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
             priority: task.priority,
             status: task.status,
             deadline: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
+            assignedUserIds: task.assignments?.map(a => a.userId) || [],
           }}
         />
       </div>

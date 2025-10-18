@@ -50,5 +50,10 @@ export class AuthController {
     await this.authService.revokeRefreshToken(token);
     return { success: true };
   }
+
+  @MessagePattern({ cmd: 'find-all-users' })
+  async findAllUsers() {
+    return this.authService.findAllUsers();
+  }
 }
 

@@ -10,6 +10,8 @@ export interface TaskUpdatedEvent {
   title: string;
   changes: string[];
   userId: string;
+  assignedUserIds?: string[];
+  creatorId: string;
 }
 
 export interface TaskStatusChangedEvent {
@@ -18,6 +20,8 @@ export interface TaskStatusChangedEvent {
   oldStatus: string;
   newStatus: string;
   userId: string;
+  assignedUserIds?: string[];
+  creatorId: string;
 }
 
 export interface TaskCommentedEvent {

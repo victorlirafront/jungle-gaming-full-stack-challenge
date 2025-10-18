@@ -125,6 +125,20 @@ export class AuthService {
     return user;
   }
 
+  async findAllUsers(): Promise<Array<{ id: string; username: string; email: string }>> {
+    const users = await this.userRepository.find({
+      where: { isActive: true },
+      select: ['id', 'username', 'email'],
+      order: { username: 'ASC' },
+    });
+
+    return users.map(user => ({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+    }));
+  }
+
   private async generateTokens(user: User): Promise<AuthResponse> {
     const payload: JwtPayload = {
       sub: user.id,
