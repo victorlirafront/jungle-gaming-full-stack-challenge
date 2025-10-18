@@ -18,66 +18,105 @@ export class NotificationsController {
     private gatewayClient: ClientProxy,
   ) {}
 
+  private getAssignedUsersToNotify(
+    assignedUserIds: string[] | undefined,
+    excludeUserIds: string[]
+  ): string[] {
+    if (!assignedUserIds || assignedUserIds.length === 0) {
+      return [];
+    }
+
+    const usersToNotify = new Set<string>();
+    assignedUserIds.forEach((userId: string) => {
+      if (!excludeUserIds.includes(userId)) {
+        usersToNotify.add(userId);
+      }
+    });
+
+    return Array.from(usersToNotify);
+  }
+
+  private async notifyUsers(
+    userIds: string[],
+    notificationType: NotificationType,
+    title: string,
+    message: string,
+    data: Record<string, unknown>
+  ): Promise<void> {
+    for (const userId of userIds) {
+      const notification = await this.notificationsService.create({
+        userId,
+        type: notificationType,
+        title,
+        message,
+        data,
+      });
+
+      this.gatewayClient.emit('notifications.broadcast', {
+        userId,
+        notification,
+      });
+    }
+  }
+
   @MessagePattern('task.created')
   async handleTaskCreated(@Payload() data: TaskCreatedEvent) {
     const { taskId, title, creatorId, assignedUserIds } = data;
 
-    if (assignedUserIds && assignedUserIds.length > 0) {
-      for (const userId of assignedUserIds) {
-        const notification = await this.notificationsService.create({
-          userId,
-          type: NotificationType.TASK_ASSIGNED,
-          title: 'Nova tarefa atribuída',
-          message: `Você foi atribuído à tarefa: ${title}`,
-          data: { taskId, creatorId },
-        });
+    const usersToNotify = this.getAssignedUsersToNotify(assignedUserIds, [creatorId]);
 
-        this.gatewayClient.emit('notifications.broadcast', {
-          userId,
-          notification,
-        });
-      }
+    if (usersToNotify.length > 0) {
+      await this.notifyUsers(
+        usersToNotify,
+        NotificationType.TASK_ASSIGNED,
+        'Nova tarefa atribuída',
+        `Você foi atribuído à tarefa: ${title}`,
+        { taskId, creatorId }
+      );
     }
 
     return { success: true };
   }
 
+  @MessagePattern('task.assigned')
+  async handleTaskAssigned(@Payload() data: TaskCreatedEvent) {
+    return this.handleTaskCreated(data);
+  }
+
   @MessagePattern('task.updated')
   async handleTaskUpdated(@Payload() data: TaskUpdatedEvent) {
-    const { taskId, title, changes, userId } = data;
+    const { taskId, title, changes, userId, assignedUserIds, creatorId } = data;
 
-    const notification = await this.notificationsService.create({
-      userId,
-      type: NotificationType.TASK_UPDATED,
-      title: 'Tarefa atualizada',
-      message: `A tarefa "${title}" foi atualizada`,
-      data: { taskId, changes },
-    });
+    const usersToNotify = this.getAssignedUsersToNotify(assignedUserIds, [userId, creatorId]);
 
-    this.gatewayClient.emit('notifications.broadcast', {
-      userId,
-      notification,
-    });
+    if (usersToNotify.length > 0) {
+      await this.notifyUsers(
+        usersToNotify,
+        NotificationType.TASK_UPDATED,
+        'Tarefa atualizada',
+        `A tarefa "${title}" foi atualizada`,
+        { taskId, changes }
+      );
+    }
 
     return { success: true };
   }
 
   @MessagePattern('task.status_changed')
   async handleTaskStatusChanged(@Payload() data: TaskStatusChangedEvent) {
-    const { taskId, title, oldStatus, newStatus, userId } = data;
+    const { taskId, title, oldStatus, newStatus, userId, assignedUserIds, creatorId } = data;
 
-    const notification = await this.notificationsService.create({
-      userId,
-      type: NotificationType.TASK_STATUS_CHANGED,
-      title: 'Status da tarefa alterado',
-      message: `A tarefa "${title}" mudou de ${oldStatus} para ${newStatus}`,
-      data: { taskId, oldStatus, newStatus },
-    });
+    const usersToNotify = this.getAssignedUsersToNotify(assignedUserIds, [userId, creatorId]);
 
-    this.gatewayClient.emit('notifications.broadcast', {
-      userId,
-      notification,
-    });
+    if (usersToNotify.length > 0) {
+      await this.notifyUsers(
+        usersToNotify,
+        NotificationType.TASK_STATUS_CHANGED,
+        'Status da tarefa alterado',
+        `A tarefa "${title}" mudou de ${oldStatus} para ${newStatus}`,
+        { taskId, oldStatus, newStatus }
+      );
+    }
 
     return { success: true };
   }
@@ -92,51 +131,24 @@ export class NotificationsController {
       usersToNotify.add(creatorId);
     }
 
-    if (assignedUserIds && assignedUserIds.length > 0) {
-      assignedUserIds.forEach((userId: string) => {
-        if (userId !== authorId) {
-          usersToNotify.add(userId);
-        }
-      });
-    }
+    const assignedToNotify = this.getAssignedUsersToNotify(assignedUserIds, [authorId]);
+    assignedToNotify.forEach(userId => usersToNotify.add(userId));
 
     if (usersToNotify.size > 0) {
-      for (const userId of Array.from(usersToNotify)) {
-        const notification = await this.notificationsService.create({
-          userId,
-          type: NotificationType.TASK_COMMENTED,
-          title: 'Novo comentário',
-          message: 'Um novo comentário foi adicionado à tarefa',
-          data: { taskId, commentId, authorId },
-        });
-
-        this.gatewayClient.emit('notifications.broadcast', {
-          userId,
-          notification,
-        });
-      }
+      await this.notifyUsers(
+        Array.from(usersToNotify),
+        NotificationType.TASK_COMMENTED,
+        'Novo comentário',
+        'Um novo comentário foi adicionado à tarefa',
+        { taskId, commentId, authorId }
+      );
     }
 
     return { success: true };
   }
 
   @MessagePattern('task.deleted')
-  async handleTaskDeleted(@Payload() data: TaskDeletedEvent) {
-    const { taskId, title, userId } = data;
-
-    const notification = await this.notificationsService.create({
-      userId,
-      type: NotificationType.TASK_DELETED,
-      title: 'Tarefa deletada',
-      message: `A tarefa "${title}" foi deletada`,
-      data: { taskId },
-    });
-
-    this.gatewayClient.emit('notifications.broadcast', {
-      userId,
-      notification,
-    });
-
+  async handleTaskDeleted() {
     return { success: true };
   }
 
