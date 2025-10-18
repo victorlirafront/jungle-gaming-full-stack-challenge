@@ -1,19 +1,29 @@
 import { useState } from 'react';
-import { Comment } from '@/types/task.types';
 import { Card, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Textarea } from '../ui/Textarea';
 import { useUsers } from '@/hooks/useUsers';
+import { useTaskComments } from '@/hooks/useTasks';
 
 interface CommentListProps {
-  comments: Comment[];
+  taskId: string;
   onAddComment: (content: string) => void;
 }
 
-export function CommentList({ comments, onAddComment }: CommentListProps) {
+export function CommentList({ taskId, onAddComment }: CommentListProps) {
   const [newComment, setNewComment] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+  
+  const offset = (currentPage - 1) * itemsPerPage;
+  const { data: commentsData } = useTaskComments(taskId, itemsPerPage, offset);
+  
+  const comments = commentsData?.data || [];
+  const total = commentsData?.total || 0;
+  const totalPages = Math.ceil(total / itemsPerPage);
+  
   const { data: allUsers = [] } = useUsers();
-
+  
   const getUserById = (userId: string) => {
     return allUsers.find(u => u.id === userId);
   };
@@ -23,6 +33,7 @@ export function CommentList({ comments, onAddComment }: CommentListProps) {
     if (newComment.trim()) {
       onAddComment(newComment);
       setNewComment('');
+      setCurrentPage(1);
     }
   };
 
@@ -48,41 +59,72 @@ export function CommentList({ comments, onAddComment }: CommentListProps) {
       </Card>
 
       {/* Comments list */}
-      {comments.length === 0 ? (
+      {total === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-8">
           Nenhum comentário ainda. Seja o primeiro a comentar!
         </p>
       ) : (
-        <div className="space-y-3">
-          {comments.map((comment) => {
-            const author = getUserById(comment.authorId);
-            const authorName = author?.username || 'Usuário';
-            const authorInitial = authorName.charAt(0).toUpperCase();
-
-            return (
-              <Card key={comment.id}>
-                <CardContent className="pt-4">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="text-sm font-medium">
-                        {authorInitial}
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm">{authorName}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(comment.createdAt).toLocaleString('pt-BR')}
+        <>
+          <div className="space-y-3">
+            {comments.map((comment) => {
+              const author = getUserById(comment.authorId);
+              const authorName = author?.username || 'Usuário';
+              const authorInitial = authorName.charAt(0).toUpperCase();
+              
+              return (
+                <Card key={comment.id}>
+                  <CardContent className="pt-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-sm font-medium">
+                          {authorInitial}
                         </span>
                       </div>
-                      <p className="text-sm mt-1">{comment.content}</p>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm">{authorName}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(comment.createdAt).toLocaleString('pt-BR')}
+                          </span>
+                        </div>
+                        <p className="text-sm mt-1">{comment.content}</p>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4">
+              <div className="text-xs text-gray-500">
+                Mostrando {offset + 1}-{Math.min(offset + itemsPerPage, total)} de {total}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  ←
+                </Button>
+                <span className="text-xs text-gray-500">
+                  {currentPage}/{totalPages}
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  →
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

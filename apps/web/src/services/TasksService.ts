@@ -46,13 +46,13 @@ export class TasksService {
     return httpClient.post<Comment>(`${this.endpoint}/${taskId}/comments`, data);
   }
 
-  async getComments(taskId: string, limit?: number, offset?: number): Promise<Comment[]> {
+  async getComments(taskId: string, limit?: number, offset?: number): Promise<{ data: Comment[]; total: number }> {
     const queryParams = new URLSearchParams();
     if (limit) queryParams.append('limit', limit.toString());
     if (offset) queryParams.append('offset', offset.toString());
 
     const query = queryParams.toString();
-    return httpClient.get<Comment[]>(
+    return httpClient.get<{ data: Comment[]; total: number }>(
       `${this.endpoint}/${taskId}/comments${query ? `?${query}` : ''}`
     );
   }

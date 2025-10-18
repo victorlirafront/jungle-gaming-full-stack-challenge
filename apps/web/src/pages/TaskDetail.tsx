@@ -7,7 +7,7 @@ import { TaskHistory } from '@/components/TaskHistory';
 import { TaskForm } from '@/components/TaskForm';
 import { TaskFormData } from '@/validations';
 import { TaskPriority, TaskStatus } from '@repo/types';
-import { useTask, useTaskComments, useCreateComment, useUpdateTask } from '@/hooks/useTasks';
+import { useTask, useCreateComment, useUpdateTask } from '@/hooks/useTasks';
 import { useUsersByIds } from '@/hooks/useUsers';
 import { useAuthStore } from '@/store/auth.store';
 
@@ -32,7 +32,6 @@ const statusColors = {
 
 export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
   const { data: task, isLoading } = useTask(taskId);
-  const { data: comments = [] } = useTaskComments(taskId);
   const createCommentMutation = useCreateComment(taskId);
   const updateTaskMutation = useUpdateTask();
   const user = useAuthStore((state) => state.user);
@@ -192,7 +191,7 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <CommentList comments={comments} onAddComment={handleAddComment} />
+        <CommentList taskId={taskId} onAddComment={handleAddComment} />
         <TaskHistory taskId={taskId} />
       </div>
     </div>
