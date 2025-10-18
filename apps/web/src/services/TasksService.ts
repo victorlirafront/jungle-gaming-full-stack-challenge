@@ -57,8 +57,15 @@ export class TasksService {
     );
   }
 
-  async getHistory(taskId: string): Promise<TaskHistory[]> {
-    return httpClient.get<TaskHistory[]>(`${this.endpoint}/${taskId}/history`);
+  async getHistory(taskId: string, limit?: number, offset?: number): Promise<{ data: TaskHistory[]; total: number }> {
+    const queryParams = new URLSearchParams();
+    if (limit) queryParams.append('limit', limit.toString());
+    if (offset) queryParams.append('offset', offset.toString());
+
+    const query = queryParams.toString();
+    return httpClient.get<{ data: TaskHistory[]; total: number }>(
+      `${this.endpoint}/${taskId}/history${query ? `?${query}` : ''}`
+    );
   }
 }
 

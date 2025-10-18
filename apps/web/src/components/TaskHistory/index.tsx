@@ -1,11 +1,13 @@
+import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 import { Badge } from '../ui/Badge';
+import { Button } from '../ui/Button';
 import type { TaskHistory } from '@/types/task.types';
 import { useUsers } from '@/hooks/useUsers';
+import { useTaskHistory } from '@/hooks/useTasks';
 
 interface TaskHistoryProps {
-  history: TaskHistory[];
-  isLoading?: boolean;
+  taskId: string;
 }
 
 const actionColors = {
@@ -22,8 +24,17 @@ const actionLabels = {
   COMMENTED: '💬 Comentada',
 };
 
-export function TaskHistory({ history, isLoading }: TaskHistoryProps) {
+export function TaskHistory({ taskId }: TaskHistoryProps) {
   const { data: allUsers = [] } = useUsers();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const offset = (currentPage - 1) * itemsPerPage;
+  const { data: historyData, isLoading } = useTaskHistory(taskId, itemsPerPage, offset);
+
+  const history = historyData?.data || [];
+  const total = historyData?.total || 0;
+  const totalPages = Math.ceil(total / itemsPerPage);
 
   const getUserById = (userId: string) => {
     return allUsers.find(u => u.id === userId);
@@ -42,7 +53,7 @@ export function TaskHistory({ history, isLoading }: TaskHistoryProps) {
     );
   }
 
-  if (!history || history.length === 0) {
+  if (!isLoading && total === 0) {
     return (
       <Card>
         <CardHeader>
@@ -95,6 +106,35 @@ export function TaskHistory({ history, isLoading }: TaskHistoryProps) {
             );
           })}
         </div>
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-4 pt-4 border-t">
+            <div className="text-xs text-gray-500">
+              Mostrando {offset + 1}-{Math.min(offset + itemsPerPage, total)} de {total}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                ←
+              </Button>
+              <span className="text-xs text-gray-500">
+                {currentPage}/{totalPages}
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+              >
+                →
+              </Button>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
