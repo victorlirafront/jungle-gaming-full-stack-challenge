@@ -38,10 +38,10 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
   const user = useAuthStore((state) => state.user);
   const [addingComment, setAddingComment] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  
+
   const assignedUserIds = task?.assignments?.map(a => a.userId) || [];
   const assignedUsers = useUsersByIds(assignedUserIds);
-  
+
   const isCreator = user?.id === task?.creatorId;
 
   if (isLoading) {
