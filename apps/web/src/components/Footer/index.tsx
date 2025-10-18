@@ -6,13 +6,7 @@ export function Footer() {
           <p>&copy; {new Date().getFullYear()} Task Management System</p>
           <div className="flex gap-4">
             <a href="/about" className="hover:text-foreground">
-              About
-            </a>
-            <a href="/privacy" className="hover:text-foreground">
-              Privacy
-            </a>
-            <a href="/terms" className="hover:text-foreground">
-              Terms
+              Created by @VictorLira
             </a>
           </div>
         </div>

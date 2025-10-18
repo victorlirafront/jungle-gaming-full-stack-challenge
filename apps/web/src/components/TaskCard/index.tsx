@@ -4,6 +4,7 @@ import { Button } from '../ui/Button';
 import { TaskPriority, TaskStatus } from '@repo/types';
 import { TaskCardProps } from './index.types';
 import { useAuthStore } from '@/store/auth.store';
+import { useUsersByIds } from '@/hooks/useUsers';
 
 
 const priorityColors = {
@@ -23,6 +24,9 @@ const statusColors = {
 export function TaskCard({ task, onView, onEdit, onDelete }: TaskCardProps) {
   const user = useAuthStore((state) => state.user);
   const isCreator = user?.id === task.creatorId;
+
+  const assignedUserIds = task.assignments?.map(a => a.userId) || [];
+  const assignedUsers = useUsersByIds(assignedUserIds);
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -48,13 +52,13 @@ export function TaskCard({ task, onView, onEdit, onDelete }: TaskCardProps) {
             </div>
           )}
 
-          {task.assignments && task.assignments.length > 0 && (
+          {assignedUsers.length > 0 && (
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">👥 Atribuído a:</span>
-              <div className="flex gap-1">
-                {task.assignments.map((assignment) => (
-                  <Badge key={assignment.id} variant="outline" className="text-xs">
-                    User {assignment.userId.slice(0, 8)}
+              <div className="flex gap-1 flex-wrap">
+                {assignedUsers.map((assignedUser) => (
+                  <Badge key={assignedUser.id} variant="outline" className="text-xs">
+                    {assignedUser.username}
                   </Badge>
                 ))}
               </div>

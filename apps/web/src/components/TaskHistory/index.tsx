@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 import { Badge } from '../ui/Badge';
+import { Button } from '../ui/Button';
 import type { TaskHistory } from '@/types/task.types';
+import { useUsers } from '@/hooks/useUsers';
+import { useTaskHistory } from '@/hooks/useTasks';
 
 interface TaskHistoryProps {
-  history: TaskHistory[];
-  isLoading?: boolean;
+  taskId: string;
 }
 
 const actionColors = {
@@ -21,7 +24,22 @@ const actionLabels = {
   COMMENTED: '💬 Comentada',
 };
 
-export function TaskHistory({ history, isLoading }: TaskHistoryProps) {
+export function TaskHistory({ taskId }: TaskHistoryProps) {
+  const { data: allUsers = [] } = useUsers();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const offset = (currentPage - 1) * itemsPerPage;
+  const { data: historyData, isLoading } = useTaskHistory(taskId, itemsPerPage, offset);
+
+  const history = historyData?.data || [];
+  const total = historyData?.total || 0;
+  const totalPages = Math.ceil(total / itemsPerPage);
+
+  const getUserById = (userId: string) => {
+    return allUsers.find(u => u.id === userId);
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -35,7 +53,7 @@ export function TaskHistory({ history, isLoading }: TaskHistoryProps) {
     );
   }
 
-  if (!history || history.length === 0) {
+  if (!isLoading && total === 0) {
     return (
       <Card>
         <CardHeader>
@@ -55,33 +73,68 @@ export function TaskHistory({ history, isLoading }: TaskHistoryProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {history.map((entry) => (
-            <div
-              key={entry.id}
-              className="flex gap-3 pb-4 border-b last:border-b-0 last:pb-0"
-            >
-              <div className="flex-shrink-0 mt-1">
-                <Badge className={actionColors[entry.action as keyof typeof actionColors] || 'bg-gray-100 text-gray-800'}>
-                  {actionLabels[entry.action as keyof typeof actionLabels] || entry.action}
-                </Badge>
+          {history.map((entry) => {
+            const user = getUserById(entry.userId);
+            const userName = user?.username || 'Usuário';
+
+            return (
+              <div
+                key={entry.id}
+                className="flex gap-3 pb-4 border-b last:border-b-0 last:pb-0"
+              >
+                <div className="flex-shrink-0 mt-1">
+                  <Badge className={actionColors[entry.action as keyof typeof actionColors] || 'bg-gray-100 text-gray-800'}>
+                    {actionLabels[entry.action as keyof typeof actionLabels] || entry.action}
+                  </Badge>
+                </div>
+                <div className="flex-1 min-w-0">
+                  {entry.details && (
+                    <p className="text-sm text-gray-700 mb-1">{entry.details}</p>
+                  )}
+                  <p className="text-xs text-gray-500">
+                    por <span className="font-medium">{userName}</span> em{' '}
+                    {new Date(entry.createdAt).toLocaleString('pt-BR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                {entry.details && (
-                  <p className="text-sm text-gray-700 mb-1">{entry.details}</p>
-                )}
-                <p className="text-xs text-gray-500">
-                  {new Date(entry.createdAt).toLocaleString('pt-BR', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-4 pt-4 border-t">
+            <div className="text-xs text-gray-500">
+              Mostrando {offset + 1}-{Math.min(offset + itemsPerPage, total)} de {total}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                ←
+              </Button>
+              <span className="text-xs text-gray-500">
+                {currentPage}/{totalPages}
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+              >
+                →
+              </Button>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

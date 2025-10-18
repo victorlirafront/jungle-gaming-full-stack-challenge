@@ -7,7 +7,8 @@ import { TaskHistory } from '@/components/TaskHistory';
 import { TaskForm } from '@/components/TaskForm';
 import { TaskFormData } from '@/validations';
 import { TaskPriority, TaskStatus } from '@repo/types';
-import { useTask, useTaskComments, useCreateComment, useUpdateTask, useTaskHistory } from '@/hooks/useTasks';
+import { useTask, useTaskComments, useCreateComment, useUpdateTask } from '@/hooks/useTasks';
+import { useUsersByIds } from '@/hooks/useUsers';
 import { useAuthStore } from '@/store/auth.store';
 
 interface TaskDetailProps {
@@ -32,13 +33,15 @@ const statusColors = {
 export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
   const { data: task, isLoading } = useTask(taskId);
   const { data: comments = [] } = useTaskComments(taskId);
-  const { data: history = [], isLoading: historyLoading } = useTaskHistory(taskId);
   const createCommentMutation = useCreateComment(taskId);
   const updateTaskMutation = useUpdateTask();
   const user = useAuthStore((state) => state.user);
   const [addingComment, setAddingComment] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  
+
+  const assignedUserIds = task?.assignments?.map(a => a.userId) || [];
+  const assignedUsers = useUsersByIds(assignedUserIds);
+
   const isCreator = user?.id === task?.creatorId;
 
   if (isLoading) {
@@ -165,9 +168,9 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
               <div>
                 <h3 className="font-semibold mb-2">Atribuído a</h3>
                 <div className="flex gap-1 flex-wrap">
-                  {task.assignments.map((assignment) => (
-                    <Badge key={assignment.id} variant="outline">
-                      User {assignment.userId.slice(0, 8)}
+                  {assignedUsers.map((assignedUser) => (
+                    <Badge key={assignedUser.id} variant="outline">
+                      👤 {assignedUser.username}
                     </Badge>
                   ))}
                 </div>
@@ -190,7 +193,7 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <CommentList comments={comments} onAddComment={handleAddComment} />
-        <TaskHistory history={history} isLoading={historyLoading} />
+        <TaskHistory taskId={taskId} />
       </div>
     </div>
   );

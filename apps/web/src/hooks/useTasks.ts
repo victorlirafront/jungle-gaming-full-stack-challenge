@@ -83,10 +83,10 @@ export function useCreateComment(taskId: string) {
   });
 }
 
-export function useTaskHistory(taskId: string) {
+export function useTaskHistory(taskId: string, limit?: number, offset?: number) {
   return useQuery({
-    queryKey: [HISTORY_QUERY_KEY, taskId],
-    queryFn: () => tasksService.getHistory(taskId),
+    queryKey: [HISTORY_QUERY_KEY, taskId, limit, offset],
+    queryFn: () => tasksService.getHistory(taskId, limit, offset),
     enabled: !!taskId,
   });
 }

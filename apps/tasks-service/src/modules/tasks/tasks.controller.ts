@@ -7,6 +7,7 @@ import {
   FilterTasksDto,
   CreateCommentDto,
   GetCommentsDto,
+  GetHistoryDto,
 } from './dto';
 
 @Controller()
@@ -61,8 +62,8 @@ export class TasksController {
   }
 
   @MessagePattern('tasks.getHistory')
-  async getHistory(@Payload() taskId: string) {
-    return this.tasksService.getHistory(taskId);
+  async getHistory(@Payload() payload: { taskId: string; query: GetHistoryDto }) {
+    return this.tasksService.getHistory(payload.taskId, payload.query);
   }
 }
 
