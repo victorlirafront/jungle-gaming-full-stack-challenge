@@ -4,6 +4,7 @@ import { NotificationsService } from './notifications.service';
 import { NotificationType } from '../../entities/notification.entity';
 import {
   TaskCreatedEvent,
+  TaskUpdatedEvent,
   TaskStatusChangedEvent,
   TaskCommentedEvent,
   TaskDeletedEvent,
@@ -37,6 +38,26 @@ export class NotificationsController {
         });
       }
     }
+
+    return { success: true };
+  }
+
+  @MessagePattern('task.updated')
+  async handleTaskUpdated(@Payload() data: TaskUpdatedEvent) {
+    const { taskId, title, changes, userId } = data;
+
+    const notification = await this.notificationsService.create({
+      userId,
+      type: NotificationType.TASK_UPDATED,
+      title: 'Tarefa atualizada',
+      message: `A tarefa "${title}" foi atualizada`,
+      data: { taskId, changes },
+    });
+
+    this.gatewayClient.emit('notifications.broadcast', {
+      userId,
+      notification,
+    });
 
     return { success: true };
   }
