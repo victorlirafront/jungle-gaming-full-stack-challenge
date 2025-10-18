@@ -14,16 +14,16 @@ export function CommentList({ taskId, onAddComment }: CommentListProps) {
   const [newComment, setNewComment] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-  
+
   const offset = (currentPage - 1) * itemsPerPage;
   const { data: commentsData } = useTaskComments(taskId, itemsPerPage, offset);
-  
+
   const comments = commentsData?.data || [];
   const total = commentsData?.total || 0;
   const totalPages = Math.ceil(total / itemsPerPage);
-  
+
   const { data: allUsers = [] } = useUsers();
-  
+
   const getUserById = (userId: string) => {
     return allUsers.find(u => u.id === userId);
   };
@@ -70,7 +70,7 @@ export function CommentList({ taskId, onAddComment }: CommentListProps) {
               const author = getUserById(comment.authorId);
               const authorName = author?.username || 'Usuário';
               const authorInitial = authorName.charAt(0).toUpperCase();
-              
+
               return (
                 <Card key={comment.id}>
                   <CardContent className="pt-4">
