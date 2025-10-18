@@ -23,9 +23,15 @@ RUN turbo run build --filter=tasks-service
 # Production stage
 FROM node:20-alpine AS production
 WORKDIR /app
+RUN apk add --no-cache netcat-openbsd
 COPY --from=builder /app/apps/tasks-service/dist ./dist
+COPY --from=builder /app/apps/tasks-service/migrations ./migrations
+COPY --from=builder /app/apps/tasks-service/src/config ./src/config
 COPY --from=builder /app/apps/tasks-service/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
+COPY apps/tasks-service/docker-entrypoint.sh ./
+RUN chmod +x docker-entrypoint.sh
 EXPOSE 3003
+ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["node", "dist/main"]
 
