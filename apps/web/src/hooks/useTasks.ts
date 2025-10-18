@@ -66,6 +66,7 @@ export function useTaskComments(taskId: string, limit?: number, offset?: number)
     queryKey: [COMMENTS_QUERY_KEY, taskId, limit, offset],
     queryFn: () => tasksService.getComments(taskId, limit, offset),
     enabled: !!taskId,
+    select: (data) => data || { data: [], total: 0 },
   });
 }
 

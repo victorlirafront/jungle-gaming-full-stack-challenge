@@ -267,7 +267,7 @@ export class TasksService {
   async getComments(
     taskId: string,
     getCommentsDto: GetCommentsDto
-  ): Promise<Comment[]> {
+  ): Promise<{ data: Comment[]; total: number }> {
     await this.findOne(taskId);
 
     const query = this.commentRepository
@@ -275,15 +275,14 @@ export class TasksService {
       .where('comment.taskId = :taskId', { taskId })
       .orderBy('comment.createdAt', 'DESC');
 
-    if (getCommentsDto.limit) {
-      query.take(getCommentsDto.limit);
-    }
+    const limit = getCommentsDto.limit || 10;
+    const offset = getCommentsDto.offset || 0;
 
-    if (getCommentsDto.offset) {
-      query.skip(getCommentsDto.offset);
-    }
+    query.take(limit).skip(offset);
 
-    return query.getMany();
+    const [data, total] = await query.getManyAndCount();
+
+    return { data, total };
   }
 
   async getHistory(
