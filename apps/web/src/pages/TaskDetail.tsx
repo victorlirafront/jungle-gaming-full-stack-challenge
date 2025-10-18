@@ -3,8 +3,11 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { CommentList } from '@/components/CommentList';
+import { TaskForm } from '@/components/TaskForm';
+import { TaskFormData } from '@/validations';
 import { TaskPriority, TaskStatus } from '@repo/types';
-import { useTask, useTaskComments, useCreateComment } from '@/hooks/useTasks';
+import { useTask, useTaskComments, useCreateComment, useUpdateTask } from '@/hooks/useTasks';
+import { useAuthStore } from '@/store/auth.store';
 
 interface TaskDetailProps {
   taskId: string;
@@ -29,7 +32,12 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
   const { data: task, isLoading } = useTask(taskId);
   const { data: comments = [] } = useTaskComments(taskId);
   const createCommentMutation = useCreateComment(taskId);
+  const updateTaskMutation = useUpdateTask();
+  const user = useAuthStore((state) => state.user);
   const [addingComment, setAddingComment] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
+  const isCreator = user?.id === task?.creatorId;
 
   if (isLoading) {
     return (
@@ -66,11 +74,59 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
     }
   };
 
+  const handleUpdateTask = async (updatedTask: TaskFormData) => {
+    try {
+      await updateTaskMutation.mutateAsync({
+        id: taskId,
+        data: {
+          title: updatedTask.title,
+          description: updatedTask.description,
+          priority: updatedTask.priority,
+          status: updatedTask.status,
+          dueDate: updatedTask.deadline,
+        },
+      });
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating task:', error);
+      alert('Erro ao atualizar tarefa. Tente novamente.');
+    }
+  };
+
+  if (isEditing && task) {
+    return (
+      <div className="space-y-6">
+        <Button variant="outline" onClick={() => setIsEditing(false)}>
+          ← Cancelar Edição
+        </Button>
+
+        <TaskForm
+          onSubmit={handleUpdateTask}
+          onCancel={() => setIsEditing(false)}
+          initialData={{
+            title: task.title,
+            description: task.description || '',
+            priority: task.priority,
+            status: task.status,
+            deadline: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <Button variant="outline" onClick={onBack}>
-        ← Voltar
-      </Button>
+      <div className="flex items-center justify-between">
+        <Button variant="outline" onClick={onBack}>
+          ← Voltar
+        </Button>
+        {isCreator && (
+          <Button onClick={() => setIsEditing(true)}>
+            ✏️ Editar Tarefa
+          </Button>
+        )}
+      </div>
 
       <Card>
         <CardHeader>
