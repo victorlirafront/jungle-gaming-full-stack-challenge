@@ -28,7 +28,8 @@ import { RpcExceptionInterceptor } from './common';
         return {
           secret: config.secret,
           signOptions: { expiresIn: config.expiresIn },
-        } as any;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any; // NestJS JWT module expects any due to interface compatibility
       },
     }),
     AuthModule,
