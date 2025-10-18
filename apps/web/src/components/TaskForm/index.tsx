@@ -3,7 +3,6 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { TaskPriority, TaskStatus } from '@repo/types';
 import { taskSchema, type TaskFormData } from '@/validations';
-import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Select } from '../ui/Select';
@@ -48,12 +47,7 @@ export function TaskForm({ onSubmit, onCancel, initialData }: TaskFormProps) {
   }, []);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{initialData ? 'Editar Tarefa' : 'Nova Tarefa'}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div>
             <label className="text-sm font-medium">Título</label>
             <Input
@@ -171,8 +165,6 @@ export function TaskForm({ onSubmit, onCancel, initialData }: TaskFormProps) {
               Cancelar
             </Button>
           </div>
-        </form>
-      </CardContent>
-    </Card>
+    </form>
   );
 }
