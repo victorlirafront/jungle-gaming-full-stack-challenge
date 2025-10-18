@@ -25,6 +25,7 @@ export const taskSchema = z.object({
       today.setHours(0, 0, 0, 0);
       return selectedDate >= today;
     }, 'O prazo não pode ser no passado'),
+  assignedUserIds: z.array(z.string()).optional(),
 });
 
 export type TaskFormData = z.infer<typeof taskSchema>;
