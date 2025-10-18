@@ -56,6 +56,7 @@ export class WebSocketService {
       this.socket.disconnect();
       this.socket = null;
       this.connected = false;
+      this.listeners.clear();
     }
   }
 
