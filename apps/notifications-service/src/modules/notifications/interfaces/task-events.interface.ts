@@ -12,6 +12,7 @@ export interface TaskUpdatedEvent {
   userId: string;
   assignedUserIds?: string[];
   creatorId: string;
+  newlyAssignedUserIds?: string[];
 }
 
 export interface TaskStatusChangedEvent {

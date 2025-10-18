@@ -144,6 +144,8 @@ export class TasksService {
     const previousAssignedUserIds = task.assignments?.map((a) => a.userId) || [];
     let currentAssignedUserIds = previousAssignedUserIds;
 
+    let newlyAssignedUsers: string[] = [];
+
     if (newAssignedUserIds !== undefined) {
       await this.assignmentRepository.delete({ taskId: id });
 
@@ -158,7 +160,7 @@ export class TasksService {
         await this.assignmentRepository.save(assignments);
       }
 
-      const newlyAssignedUsers = newAssignedUserIds.filter(
+      newlyAssignedUsers = newAssignedUserIds.filter(
         (uid) => !previousAssignedUserIds.includes(uid)
       );
 
@@ -189,6 +191,7 @@ export class TasksService {
       userId,
       assignedUserIds: currentAssignedUserIds,
       creatorId: task.creatorId,
+      newlyAssignedUserIds: newlyAssignedUsers,
     });
 
     if (updateTaskDto.status && updateTaskDto.status !== previousStatus) {

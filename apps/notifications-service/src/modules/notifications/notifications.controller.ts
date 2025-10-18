@@ -85,9 +85,10 @@ export class NotificationsController {
 
   @MessagePattern('task.updated')
   async handleTaskUpdated(@Payload() data: TaskUpdatedEvent) {
-    const { taskId, title, changes, userId, assignedUserIds, creatorId } = data;
+    const { taskId, title, changes, userId, assignedUserIds, creatorId, newlyAssignedUserIds } = data;
 
-    const usersToNotify = this.getAssignedUsersToNotify(assignedUserIds, [userId, creatorId]);
+    const excludeUserIds = [userId, creatorId, ...(newlyAssignedUserIds || [])];
+    const usersToNotify = this.getAssignedUsersToNotify(assignedUserIds, excludeUserIds);
 
     if (usersToNotify.length > 0) {
       await this.notifyUsers(
