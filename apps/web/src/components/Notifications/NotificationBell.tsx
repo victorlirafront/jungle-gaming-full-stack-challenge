@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNotificationsStore } from '@/store/notifications.store';
 import { useAuthStore } from '@/store/auth.store';
+import { useNotificationSync } from '@/hooks/useNotificationSync';
 import { NotificationPanel } from './NotificationPanel';
 
 export function NotificationBell() {
@@ -10,6 +11,8 @@ export function NotificationBell() {
   const isConnected = useNotificationsStore((state) => state.isConnected);
   const initializeWebSocket = useNotificationsStore((state) => state.initializeWebSocket);
   const disconnectWebSocket = useNotificationsStore((state) => state.disconnectWebSocket);
+
+  useNotificationSync();
 
   useEffect(() => {
     if (user?.id) {

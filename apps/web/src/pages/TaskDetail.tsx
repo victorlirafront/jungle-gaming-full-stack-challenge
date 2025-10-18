@@ -3,10 +3,11 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { CommentList } from '@/components/CommentList';
+import { TaskHistory } from '@/components/TaskHistory';
 import { TaskForm } from '@/components/TaskForm';
 import { TaskFormData } from '@/validations';
 import { TaskPriority, TaskStatus } from '@repo/types';
-import { useTask, useTaskComments, useCreateComment, useUpdateTask } from '@/hooks/useTasks';
+import { useTask, useTaskComments, useCreateComment, useUpdateTask, useTaskHistory } from '@/hooks/useTasks';
 import { useAuthStore } from '@/store/auth.store';
 
 interface TaskDetailProps {
@@ -31,12 +32,13 @@ const statusColors = {
 export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
   const { data: task, isLoading } = useTask(taskId);
   const { data: comments = [] } = useTaskComments(taskId);
+  const { data: history = [], isLoading: historyLoading } = useTaskHistory(taskId);
   const createCommentMutation = useCreateComment(taskId);
   const updateTaskMutation = useUpdateTask();
   const user = useAuthStore((state) => state.user);
   const [addingComment, setAddingComment] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-
+  
   const isCreator = user?.id === task?.creatorId;
 
   if (isLoading) {
@@ -186,7 +188,10 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
         </CardContent>
       </Card>
 
-      <CommentList comments={comments} onAddComment={handleAddComment} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <CommentList comments={comments} onAddComment={handleAddComment} />
+        <TaskHistory history={history} isLoading={historyLoading} />
+      </div>
     </div>
   );
 }
