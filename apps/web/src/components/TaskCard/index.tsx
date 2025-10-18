@@ -3,6 +3,7 @@ import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { TaskPriority, TaskStatus } from '@repo/types';
 import { TaskCardProps } from './index.types';
+import { useAuthStore } from '@/store/auth.store';
 
 
 const priorityColors = {
@@ -19,7 +20,10 @@ const statusColors = {
   [TaskStatus.DONE]: 'bg-green-100 text-green-800',
 };
 
-export function TaskCard({ task, onView, onDelete }: TaskCardProps) {
+export function TaskCard({ task, onView, onEdit, onDelete }: TaskCardProps) {
+  const user = useAuthStore((state) => state.user);
+  const isCreator = user?.id === task.creatorId;
+
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader>
@@ -68,13 +72,24 @@ export function TaskCard({ task, onView, onDelete }: TaskCardProps) {
             <Button size="sm" onClick={() => onView(task.id)}>
               Ver Detalhes
             </Button>
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={() => onDelete(task.id)}
-            >
-              Deletar
-            </Button>
+            {isCreator && (
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onEdit(task.id)}
+                >
+                  Editar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => onDelete(task.id)}
+                >
+                  Deletar
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </CardContent>
