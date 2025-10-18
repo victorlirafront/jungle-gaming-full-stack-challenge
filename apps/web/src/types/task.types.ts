@@ -55,6 +55,7 @@ export interface UpdateTaskRequest {
   dueDate?: string;
   priority?: TaskPriority;
   status?: TaskStatus;
+  assignedUserIds?: string[];
 }
 
 export interface FilterTasksRequest {

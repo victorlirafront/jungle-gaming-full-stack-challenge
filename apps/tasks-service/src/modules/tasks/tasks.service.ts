@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ClientProxy } from '@nestjs/microservices';
@@ -34,7 +34,6 @@ export class TasksService {
 
     const savedTask = await this.taskRepository.save(task);
 
-    // Create assignments if provided
     if (createTaskDto.assignedUserIds?.length) {
       const assignments = createTaskDto.assignedUserIds.map((assignedUserId) =>
         this.assignmentRepository.create({
@@ -46,7 +45,6 @@ export class TasksService {
       await this.assignmentRepository.save(assignments);
     }
 
-    // Create history
     await this.historyRepository.save({
       taskId: savedTask.id,
       userId,
@@ -54,7 +52,6 @@ export class TasksService {
       details: `Task "${savedTask.title}" created`,
     });
 
-    // Emit notification event
     this.notificationsClient.emit('task.created', {
       taskId: savedTask.id,
       title: savedTask.title,
@@ -134,10 +131,31 @@ export class TasksService {
   ): Promise<Task> {
     const task = await this.findOne(id);
 
+    if (task.creatorId !== userId) {
+      throw new ForbiddenException('Only the task creator can edit this task');
+    }
+
     const previousStatus = task.status;
-    Object.assign(task, updateTaskDto);
+    const { assignedUserIds, ...taskUpdates } = updateTaskDto;
+
+    Object.assign(task, taskUpdates);
 
     await this.taskRepository.save(task);
+
+    if (assignedUserIds !== undefined) {
+      await this.assignmentRepository.delete({ taskId: id });
+
+      if (assignedUserIds.length > 0) {
+        const assignments = assignedUserIds.map((assignedUserId) =>
+          this.assignmentRepository.create({
+            taskId: id,
+            userId: assignedUserId,
+            assignedBy: userId,
+          })
+        );
+        await this.assignmentRepository.save(assignments);
+      }
+    }
 
     const changes = Object.keys(updateTaskDto).join(', ');
     await this.historyRepository.save({
@@ -152,6 +170,7 @@ export class TasksService {
       title: task.title,
       changes: Object.keys(updateTaskDto),
       userId,
+      assignedUserIds,
     });
 
     if (updateTaskDto.status && updateTaskDto.status !== previousStatus) {
@@ -225,7 +244,7 @@ export class TasksService {
     taskId: string,
     getCommentsDto: GetCommentsDto
   ): Promise<Comment[]> {
-    await this.findOne(taskId); // Verify task exists
+    await this.findOne(taskId);
 
     const query = this.commentRepository
       .createQueryBuilder('comment')
@@ -244,7 +263,7 @@ export class TasksService {
   }
 
   async getHistory(taskId: string): Promise<TaskHistory[]> {
-    await this.findOne(taskId); // Verify task exists
+    await this.findOne(taskId);
 
     return this.historyRepository.find({
       where: { taskId },

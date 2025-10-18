@@ -6,11 +6,13 @@ import { TaskForm } from '@/components/TaskForm';
 import { Button } from '@/components/ui/Button';
 import { TaskFormData } from '@/validations';
 import { TaskStatus, TaskPriority } from '@repo/types';
-import { useTasks, useCreateTask, useDeleteTask } from '@/hooks/useTasks';
+import { useTasks, useCreateTask, useUpdateTask, useDeleteTask } from '@/hooks/useTasks';
+import type { Task } from '@/types/task.types';
 
 export function TaskList() {
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<TaskStatus | ''>('');
   const [priorityFilter, setPriorityFilter] = useState<TaskPriority | ''>('');
@@ -30,6 +32,7 @@ export function TaskList() {
   });
 
   const createTaskMutation = useCreateTask();
+  const updateTaskMutation = useUpdateTask();
   const deleteTaskMutation = useDeleteTask();
 
   const tasks = tasksData?.data || [];
@@ -65,6 +68,27 @@ export function TaskList() {
     }
   };
 
+  const handleUpdateTask = async (updatedTask: TaskFormData) => {
+    if (!editingTask) return;
+
+    try {
+      await updateTaskMutation.mutateAsync({
+        id: editingTask.id,
+        data: {
+          title: updatedTask.title,
+          description: updatedTask.description,
+          priority: updatedTask.priority,
+          status: updatedTask.status,
+          dueDate: updatedTask.deadline,
+        },
+      });
+      setEditingTask(null);
+    } catch (error) {
+      console.error('Error updating task:', error);
+      alert('Erro ao atualizar tarefa. Tente novamente.');
+    }
+  };
+
   const handleDeleteTask = async (taskId: string) => {
     if (confirm('Tem certeza que deseja deletar esta tarefa?')) {
       try {
@@ -78,6 +102,14 @@ export function TaskList() {
 
   const handleViewTask = (taskId: string) => {
     navigate({ to: '/tasks/$taskId', params: { taskId } });
+  };
+
+  const handleEditTask = (taskId: string) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (task) {
+      setEditingTask(task);
+      setShowForm(false);
+    }
   };
 
   const handleStatusFilterChange = (value: string) => {
@@ -106,6 +138,20 @@ export function TaskList() {
         <TaskForm
           onSubmit={handleCreateTask}
           onCancel={() => setShowForm(false)}
+        />
+      )}
+
+      {editingTask && (
+        <TaskForm
+          onSubmit={handleUpdateTask}
+          onCancel={() => setEditingTask(null)}
+          initialData={{
+            title: editingTask.title,
+            description: editingTask.description || '',
+            priority: editingTask.priority,
+            status: editingTask.status,
+            deadline: editingTask.dueDate ? new Date(editingTask.dueDate).toISOString().split('T')[0] : '',
+          }}
         />
       )}
 
@@ -138,6 +184,7 @@ export function TaskList() {
                 key={task.id}
                 task={task}
                 onView={handleViewTask}
+                onEdit={handleEditTask}
                 onDelete={handleDeleteTask}
               />
             ))
