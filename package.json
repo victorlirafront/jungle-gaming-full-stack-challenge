@@ -16,7 +16,8 @@
     "clean": "turbo run clean",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
-    "docker:logs": "docker-compose logs -f"
+    "docker:logs": "docker-compose logs -f",
+    "migration:run": "npm run migration:run --workspace=auth-service && npm run migration:run --workspace=tasks-service && npm run migration:run --workspace=notifications-service"
   },
   "devDependencies": {
     "turbo": "^2.0.0",

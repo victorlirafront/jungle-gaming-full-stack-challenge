@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { CommentList } from '@/components/CommentList';
 import { TaskHistory } from '@/components/TaskHistory';
+import { TaskModal } from '@/components/TaskModal';
 import { TaskForm } from '@/components/TaskForm';
 import { TaskFormData } from '@/validations';
 import { TaskPriority, TaskStatus } from '@repo/types';
@@ -98,31 +99,8 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
     }
   };
 
-  if (isEditing && task) {
-    return (
-      <div className="space-y-6">
-        <Button variant="outline" onClick={() => setIsEditing(false)}>
-          ← Cancelar Edição
-        </Button>
-
-        <TaskForm
-          onSubmit={handleUpdateTask}
-          onCancel={() => setIsEditing(false)}
-          initialData={{
-            title: task.title,
-            description: task.description || '',
-            priority: task.priority,
-            status: task.status,
-            deadline: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
-            assignedUserIds: task.assignments?.map(a => a.userId) || [],
-          }}
-        />
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6">
+    <div >
       <div className="flex items-center justify-between">
         <Button variant="outline" onClick={onBack}>
           ← Voltar
@@ -194,6 +172,27 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
         <CommentList taskId={taskId} onAddComment={handleAddComment} />
         <TaskHistory taskId={taskId} />
       </div>
+
+      {isEditing && (
+        <TaskModal
+          isOpen={isEditing}
+          onClose={() => setIsEditing(false)}
+          title="Editar Tarefa"
+        >
+          <TaskForm
+            onSubmit={handleUpdateTask}
+            onCancel={() => setIsEditing(false)}
+            initialData={{
+              title: task.title,
+              description: task.description || '',
+              priority: task.priority,
+              status: task.status,
+              deadline: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
+              assignedUserIds: task.assignments?.map(a => a.userId) || [],
+            }}
+          />
+        </TaskModal>
+      )}
     </div>
   );
 }

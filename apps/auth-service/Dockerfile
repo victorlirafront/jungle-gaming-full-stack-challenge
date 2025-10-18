@@ -24,9 +24,15 @@ RUN turbo run build --filter=auth-service
 # Production stage
 FROM node:20-alpine AS production
 WORKDIR /app
+RUN apk add --no-cache netcat-openbsd
 COPY --from=builder /app/apps/auth-service/dist ./dist
+COPY --from=builder /app/apps/auth-service/migrations ./migrations
+COPY --from=builder /app/apps/auth-service/src/config ./src/config
 COPY --from=builder /app/apps/auth-service/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
+COPY apps/auth-service/docker-entrypoint.sh ./
+RUN chmod +x docker-entrypoint.sh
 EXPOSE 3002
+ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["node", "dist/main"]
 
