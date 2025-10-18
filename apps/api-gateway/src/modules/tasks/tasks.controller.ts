@@ -20,6 +20,7 @@ import {
   FilterTasksDto,
   CreateCommentDto,
   GetCommentsDto,
+  GetHistoryDto,
 } from './dto';
 
 @ApiTags('tasks')
@@ -125,8 +126,16 @@ export class TasksController {
   @ApiOperation({ summary: 'Get task history' })
   @ApiResponse({ status: 200, description: 'Return task history' })
   @ApiResponse({ status: 404, description: 'Task not found' })
-  async getHistory(@Param('id') taskId: string) {
-    return firstValueFrom(this.tasksClient.send('tasks.getHistory', taskId));
+  async getHistory(
+    @Param('id') taskId: string,
+    @Query() getHistoryDto: GetHistoryDto
+  ) {
+    return firstValueFrom(
+      this.tasksClient.send('tasks.getHistory', {
+        taskId,
+        query: getHistoryDto,
+      })
+    );
   }
 }
 
