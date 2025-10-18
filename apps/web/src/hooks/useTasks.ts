@@ -8,6 +8,7 @@ import type {
 
 export const TASKS_QUERY_KEY = 'tasks';
 export const COMMENTS_QUERY_KEY = 'comments';
+export const HISTORY_QUERY_KEY = 'task-history';
 
 export function useTasks(filters?: FilterTasksRequest) {
   return useQuery({
@@ -44,6 +45,7 @@ export function useUpdateTask() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [TASKS_QUERY_KEY] });
       queryClient.invalidateQueries({ queryKey: [TASKS_QUERY_KEY, variables.id] });
+      queryClient.invalidateQueries({ queryKey: [HISTORY_QUERY_KEY, variables.id] });
     },
   });
 }
@@ -76,13 +78,14 @@ export function useCreateComment(taskId: string) {
       queryClient.invalidateQueries({ queryKey: [COMMENTS_QUERY_KEY, taskId] });
       queryClient.invalidateQueries({ queryKey: [TASKS_QUERY_KEY, taskId] });
       queryClient.invalidateQueries({ queryKey: [TASKS_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [HISTORY_QUERY_KEY, taskId] });
     },
   });
 }
 
 export function useTaskHistory(taskId: string) {
   return useQuery({
-    queryKey: ['task-history', taskId],
+    queryKey: [HISTORY_QUERY_KEY, taskId],
     queryFn: () => tasksService.getHistory(taskId),
     enabled: !!taskId,
   });
