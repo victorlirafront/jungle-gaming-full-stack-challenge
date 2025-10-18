@@ -5,6 +5,13 @@ export interface TaskCreatedEvent {
   assignedUserIds?: string[];
 }
 
+export interface TaskUpdatedEvent {
+  taskId: string;
+  title: string;
+  changes: string[];
+  userId: string;
+}
+
 export interface TaskStatusChangedEvent {
   taskId: string;
   title: string;

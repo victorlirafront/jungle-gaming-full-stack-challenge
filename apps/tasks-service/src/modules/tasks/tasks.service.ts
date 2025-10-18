@@ -147,7 +147,13 @@ export class TasksService {
       details: `Updated: ${changes}`,
     });
 
-    // Emit notification if status changed
+    this.notificationsClient.emit('task.updated', {
+      taskId: id,
+      title: task.title,
+      changes: Object.keys(updateTaskDto),
+      userId,
+    });
+
     if (updateTaskDto.status && updateTaskDto.status !== previousStatus) {
       this.notificationsClient.emit('task.status_changed', {
         taskId: id,
