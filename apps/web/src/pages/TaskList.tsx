@@ -2,6 +2,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { TaskCard } from '@/components/TaskCard';
 import { TaskFilters } from '@/components/TaskFilter';
+import { CreateTaskModal } from '@/components/CreateTaskModal';
+import { TaskModal } from '@/components/TaskModal';
 import { TaskForm } from '@/components/TaskForm';
 import { Button } from '@/components/ui/Button';
 import { TaskFormData } from '@/validations';
@@ -11,7 +13,7 @@ import type { Task } from '@/types/task.types';
 
 export function TaskList() {
   const navigate = useNavigate();
-  const [showForm, setShowForm] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<TaskStatus | ''>('');
@@ -62,7 +64,6 @@ export function TaskList() {
         assignedUserIds: newTask.assignedUserIds,
       });
       setCurrentPage(1);
-      setShowForm(false);
     } catch (error) {
       console.error('Error creating task:', error);
       alert('Erro ao criar tarefa. Tente novamente.');
@@ -110,7 +111,6 @@ export function TaskList() {
     const task = tasks.find((t) => t.id === taskId);
     if (task) {
       setEditingTask(task);
-      setShowForm(false);
     }
   };
 
@@ -123,7 +123,7 @@ export function TaskList() {
   };
 
   return (
-    <div className="space-y-6">
+    <div>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Tarefas</h1>
@@ -131,31 +131,36 @@ export function TaskList() {
             Gerencie suas tarefas e colabore com sua equipe
           </p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)}>
-          {showForm ? 'Cancelar' : '+ Nova Tarefa'}
+        <Button onClick={() => setShowCreateModal(true)}>
+          + Nova Tarefa
         </Button>
       </div>
 
-      {showForm && (
-        <TaskForm
-          onSubmit={handleCreateTask}
-          onCancel={() => setShowForm(false)}
-        />
-      )}
+      <CreateTaskModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSubmit={handleCreateTask}
+      />
 
       {editingTask && (
-        <TaskForm
-          onSubmit={handleUpdateTask}
-          onCancel={() => setEditingTask(null)}
-          initialData={{
-            title: editingTask.title,
-            description: editingTask.description || '',
-            priority: editingTask.priority,
-            status: editingTask.status,
-            deadline: editingTask.dueDate ? new Date(editingTask.dueDate).toISOString().split('T')[0] : '',
-            assignedUserIds: editingTask.assignments?.map(a => a.userId) || [],
-          }}
-        />
+        <TaskModal
+          isOpen={true}
+          onClose={() => setEditingTask(null)}
+          title="Editar Tarefa"
+        >
+          <TaskForm
+            onSubmit={handleUpdateTask}
+            onCancel={() => setEditingTask(null)}
+            initialData={{
+              title: editingTask.title,
+              description: editingTask.description || '',
+              priority: editingTask.priority,
+              status: editingTask.status,
+              deadline: editingTask.dueDate ? new Date(editingTask.dueDate).toISOString().split('T')[0] : '',
+              assignedUserIds: editingTask.assignments?.map(a => a.userId) || [],
+            }}
+          />
+        </TaskModal>
       )}
 
       <TaskFilters
