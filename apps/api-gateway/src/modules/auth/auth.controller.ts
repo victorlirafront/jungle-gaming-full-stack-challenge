@@ -1,7 +1,9 @@
-import { Body, Controller, Inject, Post } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Post, UseGuards } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { firstValueFrom } from 'rxjs';
 import { RegisterDto, LoginDto, RefreshTokenDto } from './dto';
+import { JwtAuthGuard } from '../../common';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -31,5 +33,14 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Invalid refresh token' })
   refresh(@Body() dto: RefreshTokenDto) {
     return this.authClient.send({ cmd: 'refresh' }, dto);
+  }
+
+  @Get('users')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all users' })
+  @ApiResponse({ status: 200, description: 'Return all users' })
+  async findAllUsers() {
+    return firstValueFrom(this.authClient.send({ cmd: 'find-all-users' }, {}));
   }
 }
