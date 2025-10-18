@@ -9,6 +9,7 @@ import {
   FilterTasksDto,
   CreateCommentDto,
   GetCommentsDto,
+  GetHistoryDto,
 } from './dto';
 
 @Injectable()
@@ -285,13 +286,25 @@ export class TasksService {
     return query.getMany();
   }
 
-  async getHistory(taskId: string): Promise<TaskHistory[]> {
+  async getHistory(
+    taskId: string,
+    getHistoryDto: GetHistoryDto
+  ): Promise<{ data: TaskHistory[]; total: number }> {
     await this.findOne(taskId);
 
-    return this.historyRepository.find({
-      where: { taskId },
-      order: { createdAt: 'DESC' },
-    });
+    const query = this.historyRepository
+      .createQueryBuilder('history')
+      .where('history.taskId = :taskId', { taskId })
+      .orderBy('history.createdAt', 'DESC');
+
+    const limit = getHistoryDto.limit || 10;
+    const offset = getHistoryDto.offset || 0;
+
+    query.take(limit).skip(offset);
+
+    const [data, total] = await query.getManyAndCount();
+
+    return { data, total };
   }
 }
 
