@@ -9,17 +9,27 @@ Sistema de gestão de tarefas colaborativo com microserviços, notificações em
 
 ## 📌 Início Rápido
 
+**Pré-requisitos:** Node.js >= 18.0.0, Docker, Yarn
+
 ```bash
-# 1. Instalar dependências
+# 1. Clonar o repositório
+git clone https://github.com/victorlirafront/jungle-gaming-full-stack-challenge.git
+cd jungle-gaming-full-stack-challenge
+
+# 2. Instalar dependências
 yarn install
 
-# 2. Subir todos os serviços
+# 3. Subir todos os serviços (banco, RabbitMQ, backend, frontend)
 docker-compose up -d
 
-# 3. Acessar
-Frontend: http://localhost:3000
-API Docs: http://localhost:3001/api/docs
+# 4. Acessar a aplicação
+# Frontend: http://localhost:3000
+# API Gateway: http://localhost:3001
+# Swagger Docs: http://localhost:3001/api/docs
+# RabbitMQ Admin: http://localhost:15672 (admin/admin)
 ```
+
+**Parar:** `docker-compose down`
 
 ## 📌 1. Arquitetura
 
