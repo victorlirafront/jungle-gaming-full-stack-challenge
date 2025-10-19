@@ -9,7 +9,7 @@ import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User, RefreshToken } from '../../entities';
-import { RegisterDto, LoginDto, RefreshTokenDto } from './dto';
+import { RegisterDto, LoginDto, RefreshTokenDto, UpdateProfileDto } from './dto';
 import { AuthResponse, JwtPayload } from './interfaces/auth-response.interface';
 import { AUTH_CONSTANTS } from '../../common';
 
@@ -137,6 +137,57 @@ export class AuthService {
       username: user.username,
       email: user.email,
     }));
+  }
+
+  async getProfile(userId: string): Promise<{ id: string; email: string; username: string; fullName?: string }> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      select: ['id', 'email', 'username', 'fullName'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      fullName: user.fullName,
+    };
+  }
+
+  async updateProfile(userId: string, updateProfileDto: UpdateProfileDto): Promise<{ id: string; email: string; username: string; fullName?: string }> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (updateProfileDto.username && updateProfileDto.username !== user.username) {
+      const existingUser = await this.userRepository.findOne({
+        where: { username: updateProfileDto.username },
+      });
+
+      if (existingUser) {
+        throw new ConflictException('Username already exists');
+      }
+
+      user.username = updateProfileDto.username;
+    }
+
+    if (updateProfileDto.fullName !== undefined) {
+      user.fullName = updateProfileDto.fullName;
+    }
+
+    await this.userRepository.save(user);
+
+    return {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      fullName: user.fullName,
+    };
   }
 
   private async generateTokens(user: User): Promise<AuthResponse> {
