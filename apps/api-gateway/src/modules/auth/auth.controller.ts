@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Inject, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Post, UseGuards, Put, Request } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { firstValueFrom } from 'rxjs';
-import { RegisterDto, LoginDto, RefreshTokenDto } from './dto';
+import { RegisterDto, LoginDto, RefreshTokenDto, UpdateProfileDto } from './dto';
 import { JwtAuthGuard } from '../../common';
 
 @ApiTags('Authentication')
@@ -42,5 +42,23 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Return all users' })
   async findAllUsers() {
     return firstValueFrom(this.authClient.send({ cmd: 'find-all-users' }, {}));
+  }
+
+  @Get('profile')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiResponse({ status: 200, description: 'Profile retrieved successfully' })
+  async getProfile(@Request() req: any) {
+    return firstValueFrom(this.authClient.send({ cmd: 'get-profile' }, req.user.sub));
+  }
+
+  @Put('profile')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update current user profile' })
+  @ApiResponse({ status: 200, description: 'Profile updated successfully' })
+  async updateProfile(@Request() req: any, @Body() dto: UpdateProfileDto) {
+    return firstValueFrom(this.authClient.send({ cmd: 'update-profile' }, { userId: req.user.sub, data: dto }));
   }
 }
