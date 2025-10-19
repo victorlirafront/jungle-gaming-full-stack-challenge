@@ -7,9 +7,7 @@
 
 Sistema de gestão de tarefas colaborativo com microserviços, notificações em tempo real e arquitetura event-driven.
 
-**Stack:** React + NestJS + RabbitMQ + PostgreSQL + WebSocket + Docker + Turborepo
-
-## Início Rápido
+## 📌 Início Rápido
 
 ```bash
 # 1. Instalar dependências
@@ -23,7 +21,7 @@ Frontend: http://localhost:3000
 API Docs: http://localhost:3001/api
 ```
 
-## 1. Arquitetura
+## 📌 1. Arquitetura
 
 ### Diagrama de Componentes
 
@@ -79,7 +77,7 @@ packages/
 └── tsconfig/                 # Configuração TypeScript
 ```
 
-## 2. Decisões Técnicas e Trade-offs
+## 📌 2. Decisões Técnicas e Trade-offs
 
 ### Backend
 
@@ -102,7 +100,7 @@ packages/
 - Performance otimizada com grandes volumes
 - Implementada em comentários e histórico
 
-### Frontend
+## 📌 Frontend
 
 **Service Layer Pattern**
 - Encapsula comunicação com API (`src/services/`)
@@ -128,47 +126,9 @@ packages/
 - Cache inteligente, sincronização, optimistic updates
 - Essential para real-time e UX moderna
 
-## 3. Problemas Conhecidos e Melhorias
+## 📌 3. Problemas Conhecidos e Melhorias
 
-### O Que Melhoraria
-
-**Segurança:**
-- Rate limiting mais granular (atualmente 10 req/s global)
-- CORS configurável por ambiente
-- Helmet.js para headers de segurança
-- Validação de input mais rigorosa
-
-**Performance:**
-- Redis para cache de queries frequentes
-- Índices adicionais no banco
-- Lazy loading de componentes
-- Virtualização de listas longas
-
-**Observabilidade:**
-- Logs estruturados (Winston/Pino)
-- Healthchecks (Terminus)
-- Métricas (Prometheus)
-- Tracing distribuído (Jaeger)
-
-**Testes:**
-- Testes unitários (Jest)
-- Testes de integração
-- E2E com Playwright
-- Coverage > 80%
-
-**Arquitetura:**
-- CQRS/Event Sourcing para audit completo
-- Saga Pattern para transações distribuídas
-- Clean Architecture completa
-- Domain-Driven Design
-
-**DevOps:**
-- CI/CD pipeline (GitHub Actions)
-- Kubernetes manifests
-- Terraform para infraestrutura
-- Monitoring com Grafana
-
-## 4. Tempo Gasto
+## 📌 4. Tempo Gasto
 
 ### Dia 1-2: Fundação
 - Setup do monorepo com Turborepo
@@ -204,7 +164,7 @@ packages/
 - Testes finais
 - Ajustes de UX
 
-## 5. Instruções Específicas
+## 📌 5. Instruções Específicas
 
 ### Como Rodar em Produção
 
@@ -268,7 +228,7 @@ yarn docker:logs
 yarn migration:run
 ```
 
-## Stack Completa
+## 📌 Stack Completa
 
 **Frontend:**
 - React 18 + TypeScript
@@ -290,7 +250,7 @@ yarn migration:run
 - Turborepo
 - Multi-stage Dockerfiles
 
-## Funcionalidades Implementadas
+## 📌 Funcionalidades Implementadas
 
 - ✅ Autenticação JWT com refresh tokens
 - ✅ CRUD completo de tarefas
