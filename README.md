@@ -166,37 +166,6 @@ packages/
 
 ## 📌 5. Instruções Específicas
 
-### Como Rodar em Produção
-
-```bash
-# 1. Configurar variáveis de ambiente
-cp .env.example .env
-# Edite as variáveis de produção
-
-# 2. Build das imagens
-docker-compose -f docker-compose.prod.yml build
-
-# 3. Subir em produção
-docker-compose -f docker-compose.prod.yml up -d
-
-# Migrations rodam automaticamente via entrypoint scripts
-```
-
-### Resetar Banco de Dados
-
-```bash
-# Opção 1: Resetar volume (apaga tudo)
-docker-compose down
-docker volume rm jungle-gaming-full-stack-challenge_postgres_data
-docker-compose up -d
-
-# Opção 2: Limpar dados (mantém estrutura)
-docker exec -it db psql -U postgres -d challenge_db -c "
-TRUNCATE TABLE task_history, comments, task_assignments, tasks, 
-              notifications, refresh_tokens, users CASCADE;
-"
-```
-
 ### Acessar Serviços
 
 ```bash
