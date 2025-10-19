@@ -18,7 +18,7 @@ docker-compose up -d
 
 # 3. Acessar
 Frontend: http://localhost:3000
-API Docs: http://localhost:3001/api
+API Docs: http://localhost:3001/api/docs
 ```
 
 ## 📌 1. Arquitetura
@@ -209,7 +209,7 @@ Usuário: admin
 Senha: admin
 
 # Swagger API Docs
-http://localhost:3001/api
+http://localhost:3001/api/docs
 ```
 
 ### Comandos Úteis
