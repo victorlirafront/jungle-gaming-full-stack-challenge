@@ -142,24 +142,45 @@ Senha: admin
 
 ## Decisões Técnicas
 
-### Microserviços
+### Backend
+
+#### Microserviços
 Separação em serviços independentes para escalabilidade e manutenibilidade:
 - **Auth Service**: Isolamento de lógica de autenticação e segurança
 - **Tasks Service**: Domínio de tarefas, comentários e histórico
 - **Notifications Service**: Gerenciamento de notificações e eventos
 
-### Event-Driven Architecture
+#### Event-Driven Architecture
 RabbitMQ para comunicação assíncrona entre serviços, permitindo:
 - Desacoplamento entre serviços
 - Processamento assíncrono
 - Escalabilidade horizontal
 - Resiliência (retry automático)
 
-### Real-time com WebSocket
+#### Real-time com WebSocket
 Socket.IO para notificações instantâneas sem polling, melhorando UX e reduzindo carga no servidor.
 
-### Paginação Server-Side
+#### Paginação Server-Side
 Implementada em comentários e histórico para performance com grandes volumes de dados.
+
+### Frontend
+
+#### Service Layer Pattern
+Encapsula lógica de comunicação com API (`src/services/`)
+- `AuthService`, `TasksService`, `WebSocketService`
+
+#### Data Mapper Pattern
+Transforma dados da API para formato do frontend (`src/mappers/`)
+- Separação entre DTOs da API e modelos do frontend
+
+#### Custom Hooks Pattern
+Gerencia estado e side effects com React Query (`src/hooks/`)
+- `useTasks`, `useUsers`, `useNotificationSync`
+
+#### HTTP Client Pattern
+Cliente HTTP reutilizável com interceptors e tratamento de erros (`src/http/`)
+- Autenticação automática via interceptors
+- Refresh token automático
 
 ### Monorepo com Turborepo
 Compartilhamento de código (types, utils) e builds otimizados em cache.
