@@ -6,6 +6,7 @@ import { CommentList } from '@/components/CommentList';
 import { TaskHistory } from '@/components/TaskHistory';
 import { TaskModal } from '@/components/TaskModal';
 import { TaskForm } from '@/components/TaskForm';
+import { TaskDetailSkeleton } from '@/components/TaskDetail/TaskDetailSkeleton';
 import { TaskFormData } from '@/validations';
 import { TaskPriority, TaskStatus } from '@repo/types';
 import { useTask, useCreateComment, useUpdateTask } from '@/hooks/useTasks';
@@ -47,11 +48,7 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
   const isCreator = user?.id === task?.creatorId;
 
   if (isLoading) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">Carregando tarefa...</p>
-      </div>
-    );
+    return <TaskDetailSkeleton />;
   }
 
   if (!task) {
