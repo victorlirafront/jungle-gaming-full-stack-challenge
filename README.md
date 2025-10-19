@@ -249,6 +249,9 @@ yarn migration:run
 - ✅ Migrations para produção
 - ✅ Docker entrypoints automáticos
 
+## 📌 Diferenciais (Extras)
+- ✅ Página de perfil do usuário (visualizar e editar)
+- ✅ Reset de senha
 ## Licença
 
 MIT

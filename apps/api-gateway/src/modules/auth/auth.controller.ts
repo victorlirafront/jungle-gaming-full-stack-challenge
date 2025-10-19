@@ -2,7 +2,7 @@ import { Body, Controller, Get, Inject, Post, UseGuards, Put, Request } from '@n
 import { ClientProxy } from '@nestjs/microservices';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { firstValueFrom } from 'rxjs';
-import { RegisterDto, LoginDto, RefreshTokenDto, UpdateProfileDto } from './dto';
+import { RegisterDto, LoginDto, RefreshTokenDto, UpdateProfileDto, ChangePasswordDto } from './dto';
 import { JwtAuthGuard } from '../../common';
 
 @ApiTags('Authentication')
@@ -60,5 +60,15 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Profile updated successfully' })
   async updateProfile(@Request() req: any, @Body() dto: UpdateProfileDto) {
     return firstValueFrom(this.authClient.send({ cmd: 'update-profile' }, { userId: req.user.sub, data: dto }));
+  }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Change password (authenticated users)' })
+  @ApiResponse({ status: 200, description: 'Password changed successfully' })
+  @ApiResponse({ status: 401, description: 'Current password is incorrect' })
+  async changePassword(@Request() req: any, @Body() dto: ChangePasswordDto) {
+    return firstValueFrom(this.authClient.send({ cmd: 'change-password' }, { userId: req.user.sub, data: dto }));
   }
 }

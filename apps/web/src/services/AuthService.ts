@@ -53,6 +53,13 @@ export class AuthService {
     );
   }
 
+  async changePassword(currentPassword: string, newPassword: string): Promise<{ message: string }> {
+    return httpClient.post<{ message: string }>(
+      `${this.endpoint}/change-password`,
+      { currentPassword, newPassword }
+    );
+  }
+
   saveTokens(accessToken: string, refreshToken: string): void {
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);

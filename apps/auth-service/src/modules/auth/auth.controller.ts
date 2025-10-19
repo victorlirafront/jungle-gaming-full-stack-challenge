@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, RefreshTokenDto, UpdateProfileDto } from './dto';
+import { RegisterDto, LoginDto, RefreshTokenDto, UpdateProfileDto, ChangePasswordDto } from './dto';
 
 @Controller()
 export class AuthController {
@@ -64,6 +64,11 @@ export class AuthController {
   @MessagePattern({ cmd: 'update-profile' })
   async updateProfile(@Payload() payload: { userId: string; data: UpdateProfileDto }) {
     return this.authService.updateProfile(payload.userId, payload.data);
+  }
+
+  @MessagePattern({ cmd: 'change-password' })
+  async changePassword(@Payload() payload: { userId: string; data: ChangePasswordDto }) {
+    return this.authService.changePassword(payload.userId, payload.data);
   }
 }
 

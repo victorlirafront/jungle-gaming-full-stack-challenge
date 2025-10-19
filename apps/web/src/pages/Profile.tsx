@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Skeleton } from '@/components/ui';
 import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
 import { useToastStore } from '@/store/toast.store';
+import { authService } from '@/services';
 
 export function Profile() {
   const { data: profile, isLoading, error } = useProfile();
@@ -11,6 +12,10 @@ export function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [username, setUsername] = useState('');
   const [fullName, setFullName] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
   const handleEdit = () => {
     setUsername(profile?.username || '');
@@ -44,6 +49,48 @@ export function Profile() {
         type: 'error',
         title: 'Erro ao atualizar perfil',
         message: error?.message || 'Tente novamente',
+      });
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (newPassword.length < 6) {
+      addToast({
+        type: 'error',
+        title: 'Senha muito curta',
+        message: 'A nova senha deve ter pelo menos 6 caracteres',
+      });
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      addToast({
+        type: 'error',
+        title: 'Senhas não conferem',
+      });
+      return;
+    }
+
+    try {
+      await authService.changePassword(currentPassword, newPassword);
+
+      addToast({
+        type: 'success',
+        title: 'Senha alterada!',
+        message: 'Sua senha foi alterada com sucesso',
+      });
+
+      setIsChangingPassword(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+    } catch (error: any) {
+      addToast({
+        type: 'error',
+        title: 'Erro ao alterar senha',
+        message: error?.message || 'Verifique sua senha atual',
       });
     }
   };
@@ -100,7 +147,7 @@ export function Profile() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <div className="max-w-2xl mx-auto p-6 space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Meu Perfil</CardTitle>
@@ -167,6 +214,87 @@ export function Profile() {
                   {updateProfileMutation.isPending ? 'Salvando...' : 'Salvar'}
                 </Button>
                 <Button type="button" variant="outline" onClick={handleCancel}>
+                  Cancelar
+                </Button>
+              </div>
+            </form>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Alterar Senha</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {!isChangingPassword ? (
+            <div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Altere sua senha para manter sua conta segura
+              </p>
+              <Button onClick={() => setIsChangingPassword(true)} variant="outline">
+                Trocar Senha
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={handleChangePassword} className="space-y-4">
+              <div>
+                <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                  Senha Atual
+                </label>
+                <Input
+                  id="currentPassword"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Digite sua senha atual"
+                  minLength={6}
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                  Nova Senha
+                </label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Mínimo 6 caracteres"
+                  minLength={6}
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="confirmNewPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                  Confirmar Nova Senha
+                </label>
+                <Input
+                  id="confirmNewPassword"
+                  type="password"
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  placeholder="Digite a nova senha novamente"
+                  minLength={6}
+                  required
+                />
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button type="submit">Alterar Senha</Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsChangingPassword(false);
+                    setCurrentPassword('');
+                    setNewPassword('');
+                    setConfirmNewPassword('');
+                  }}
+                >
                   Cancelar
                 </Button>
               </div>
