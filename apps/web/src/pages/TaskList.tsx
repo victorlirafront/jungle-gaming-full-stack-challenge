@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { TaskCard } from '@/components/TaskCard';
+import { TaskCardSkeleton } from '@/components/TaskCard/TaskCardSkeleton';
 import { TaskFilters } from '@/components/TaskFilter';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { TaskModal } from '@/components/TaskModal';
@@ -201,8 +202,10 @@ export function TaskList() {
       />
 
       {isLoading ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Carregando tarefas...</p>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <TaskCardSkeleton key={i} />
+          ))}
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
