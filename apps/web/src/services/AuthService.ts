@@ -40,6 +40,19 @@ export class AuthService {
     );
   }
 
+  async getProfile(): Promise<{ id: string; email: string; username: string; fullName?: string }> {
+    return httpClient.get<{ id: string; email: string; username: string; fullName?: string }>(
+      `${this.endpoint}/profile`
+    );
+  }
+
+  async updateProfile(data: { username?: string; fullName?: string }): Promise<{ id: string; email: string; username: string; fullName?: string }> {
+    return httpClient.put<{ id: string; email: string; username: string; fullName?: string }>(
+      `${this.endpoint}/profile`,
+      data
+    );
+  }
+
   saveTokens(accessToken: string, refreshToken: string): void {
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
