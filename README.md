@@ -1,6 +1,6 @@
 <img 
   style="border: 2px solid white;" 
-  src="https://media.licdn.com/dms/image/v2/D4D3DAQG5Ki_OPFVs7w/image-scale_191_1128/B4DZjnZJl5GgAg-/0/1756228787622/junglegaming_cover?e=1761447600&v=beta&t=MWv4E6s9aYFxjBuC6X-o2JnuUxcqBz226mMrjHkjZA8" 
+  src="https://ik.imagekit.io/Victorliradev/randoom/header_RU18n3BAo.png?updatedAt=1760889700708" 
 />
 
 # Task Management System - Jungle Gaming Challenge
