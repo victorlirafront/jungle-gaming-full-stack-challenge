@@ -1,12 +1,14 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useAuthStore } from '@/store/auth.store';
 import { NotificationBell } from '../Notifications';
+import { User } from 'lucide-react';
+import { useLogout } from '@/hooks/useLogout';
 
 export function Header() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const logout = useAuthStore((state) => state.logout);
+  const logout = useLogout();
 
   const handleLogout = () => {
     logout();
@@ -27,9 +29,10 @@ export function Header() {
                 Tasks
               </Link>
               <NotificationBell />
-              <span className="text-sm text-muted-foreground">
+              <Link to="/profile" className="flex items-center gap-2 text-sm hover:text-primary">
+                <User size={18} />
                 {user?.username}
-              </span>
+              </Link>
               <button
                 onClick={handleLogout}
                 className="text-sm text-destructive hover:text-destructive/90"
