@@ -3,6 +3,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { routeTree } from './routeTree.gen';
 import { useHttpClientSetup } from './hooks/useHttpClientSetup';
 import { queryClient } from './lib/react-query';
+import { ToastContainer } from './components/Toast';
 
 const router = createRouter({ routeTree });
 
@@ -14,7 +15,12 @@ declare module '@tanstack/react-router' {
 
 function AppContent() {
   useHttpClientSetup();
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      <RouterProvider router={router} />
+      <ToastContainer />
+    </>
+  );
 }
 
 export function App() {

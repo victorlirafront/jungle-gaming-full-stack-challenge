@@ -11,6 +11,7 @@ import { TaskPriority, TaskStatus } from '@repo/types';
 import { useTask, useCreateComment, useUpdateTask } from '@/hooks/useTasks';
 import { useUsersByIds } from '@/hooks/useUsers';
 import { useAuthStore } from '@/store/auth.store';
+import { useToastStore } from '@/store/toast.store';
 
 interface TaskDetailProps {
   taskId: string;
@@ -36,6 +37,7 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
   const createCommentMutation = useCreateComment(taskId);
   const updateTaskMutation = useUpdateTask();
   const user = useAuthStore((state) => state.user);
+  const addToast = useToastStore((state) => state.addToast);
   const [addingComment, setAddingComment] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -71,9 +73,17 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
     try {
       setAddingComment(true);
       await createCommentMutation.mutateAsync({ content });
+      addToast({
+        type: 'success',
+        title: 'Comentário adicionado!',
+      });
     } catch (error) {
       console.error('Error adding comment:', error);
-      alert('Erro ao adicionar comentário. Tente novamente.');
+      addToast({
+        type: 'error',
+        title: 'Erro ao adicionar comentário',
+        message: 'Tente novamente.',
+      });
     } finally {
       setAddingComment(false);
     }
@@ -93,9 +103,18 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
         },
       });
       setIsEditing(false);
+      addToast({
+        type: 'success',
+        title: 'Tarefa atualizada!',
+        message: `"${updatedTask.title}" foi atualizada.`,
+      });
     } catch (error) {
       console.error('Error updating task:', error);
-      alert('Erro ao atualizar tarefa. Tente novamente.');
+      addToast({
+        type: 'error',
+        title: 'Erro ao atualizar tarefa',
+        message: 'Tente novamente.',
+      });
     }
   };
 
