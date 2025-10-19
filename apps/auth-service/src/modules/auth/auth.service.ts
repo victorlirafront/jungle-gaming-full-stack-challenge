@@ -3,13 +3,14 @@ import {
   ConflictException,
   UnauthorizedException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User, RefreshToken } from '../../entities';
-import { RegisterDto, LoginDto, RefreshTokenDto, UpdateProfileDto } from './dto';
+import { RegisterDto, LoginDto, RefreshTokenDto, UpdateProfileDto, ChangePasswordDto } from './dto';
 import { AuthResponse, JwtPayload } from './interfaces/auth-response.interface';
 import { AUTH_CONSTANTS } from '../../common';
 
@@ -188,6 +189,28 @@ export class AuthService {
       username: user.username,
       fullName: user.fullName,
     };
+  }
+
+  async changePassword(userId: string, changePasswordDto: ChangePasswordDto): Promise<{ message: string }> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const isPasswordValid = await bcrypt.compare(changePasswordDto.currentPassword, user.password);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const hashedPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
+    user.password = hashedPassword;
+    await this.userRepository.save(user);
+
+    await this.refreshTokenRepository.delete({ userId });
+
+    return { message: 'Password changed successfully' };
   }
 
   private async generateTokens(user: User): Promise<AuthResponse> {
