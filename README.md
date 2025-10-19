@@ -251,6 +251,7 @@ yarn migration:run
 
 ## 📌 Diferenciais (Extras)
 - ✅ Página de perfil do usuário (visualizar e editar)
+- ✅ Reset de senha
 ## Licença
 
 MIT
