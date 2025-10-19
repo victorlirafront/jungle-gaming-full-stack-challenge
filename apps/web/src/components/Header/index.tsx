@@ -17,7 +17,7 @@ export function Header() {
     <header className="border-b bg-white">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h1 className="text-xl font-bold">Task Management</h1>
+          <Link to="/" className="text-xl font-bold">Task Management</Link>
         </div>
 
         <nav className="flex items-center gap-4">
