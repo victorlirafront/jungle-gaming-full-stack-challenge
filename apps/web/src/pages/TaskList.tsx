@@ -9,10 +9,12 @@ import { Button } from '@/components/ui/Button';
 import { TaskFormData } from '@/validations';
 import { TaskStatus, TaskPriority } from '@repo/types';
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask } from '@/hooks/useTasks';
+import { useToastStore } from '@/store/toast.store';
 import type { Task } from '@/types/task.types';
 
 export function TaskList() {
   const navigate = useNavigate();
+  const addToast = useToastStore((state) => state.addToast);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [search, setSearch] = useState('');
@@ -64,9 +66,18 @@ export function TaskList() {
         assignedUserIds: newTask.assignedUserIds,
       });
       setCurrentPage(1);
+      addToast({
+        type: 'success',
+        title: 'Tarefa criada com sucesso!',
+        message: `"${newTask.title}" foi adicionada.`,
+      });
     } catch (error) {
       console.error('Error creating task:', error);
-      alert('Erro ao criar tarefa. Tente novamente.');
+      addToast({
+        type: 'error',
+        title: 'Erro ao criar tarefa',
+        message: 'Tente novamente.',
+      });
     }
   };
 
@@ -86,9 +97,18 @@ export function TaskList() {
         },
       });
       setEditingTask(null);
+      addToast({
+        type: 'success',
+        title: 'Tarefa atualizada!',
+        message: `"${updatedTask.title}" foi atualizada.`,
+      });
     } catch (error) {
       console.error('Error updating task:', error);
-      alert('Erro ao atualizar tarefa. Tente novamente.');
+      addToast({
+        type: 'error',
+        title: 'Erro ao atualizar tarefa',
+        message: 'Tente novamente.',
+      });
     }
   };
 
@@ -96,9 +116,17 @@ export function TaskList() {
     if (confirm('Tem certeza que deseja deletar esta tarefa?')) {
       try {
         await deleteTaskMutation.mutateAsync(taskId);
+        addToast({
+          type: 'success',
+          title: 'Tarefa deletada!',
+        });
       } catch (error) {
         console.error('Error deleting task:', error);
-        alert('Erro ao deletar tarefa. Tente novamente.');
+        addToast({
+          type: 'error',
+          title: 'Erro ao deletar tarefa',
+          message: 'Tente novamente.',
+        });
       }
     }
   };
