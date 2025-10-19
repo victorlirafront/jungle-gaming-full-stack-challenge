@@ -1,13 +1,9 @@
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { Register } from '@/pages/Register';
+import { redirectIfAuthenticated } from '@/utils/route-guards';
 
 export const Route = createFileRoute('/register')({
-  beforeLoad: () => {
-    const isAuthenticated = localStorage.getItem('accessToken');
-    if (isAuthenticated) {
-      throw redirect({ to: '/' });
-    }
-  },
+  beforeLoad: redirectIfAuthenticated,
   component: Register,
 });
 

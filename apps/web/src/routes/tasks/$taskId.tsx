@@ -1,13 +1,9 @@
-import { createFileRoute, useNavigate, redirect } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { TaskDetail } from '@/pages/TaskDetail';
+import { requireAuth } from '@/utils/route-guards';
 
 export const Route = createFileRoute('/tasks/$taskId')({
-  beforeLoad: () => {
-    const isAuthenticated = localStorage.getItem('accessToken');
-    if (!isAuthenticated) {
-      throw redirect({ to: '/login' });
-    }
-  },
+  beforeLoad: requireAuth,
   component: TaskDetailPage,
 });
 
