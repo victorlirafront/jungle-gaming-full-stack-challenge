@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TasksController } from './tasks.controller';
 import { of } from 'rxjs';
 import { JwtPayload, JwtAuthGuard } from '../../../common';
+import { TaskPriority, TaskStatus } from '@repo/types';
 
 const mockTasksClient = {
   send: jest.fn(),
@@ -21,8 +22,8 @@ const createMockTask = (overrides = {}) => ({
   id: 'task-123',
   title: 'Test Task',
   description: 'Test Description',
-  status: 'TODO',
-  priority: 'MEDIUM',
+  status: TaskStatus.TODO,
+  priority: TaskPriority.MEDIUM,
   creatorId: 'user-123',
   ...overrides,
 });
@@ -53,7 +54,7 @@ describe('TasksController', () => {
       const createTaskDto = {
         title: 'New Task',
         description: 'Task Description',
-        priority: 'HIGH',
+        priority: TaskPriority.HIGH,
       };
       const user = createMockUser();
       const mockTask = createMockTask();
@@ -72,7 +73,7 @@ describe('TasksController', () => {
 
   describe('findAll', () => {
     it('should send findAll message with filters', async () => {
-      const filterDto = { status: 'TODO', limit: 10 };
+      const filterDto = { status: TaskStatus.TODO, limit: 10 };
       const mockResponse = { data: [], total: 0 };
 
       mockTasksClient.send.mockReturnValue(of(mockResponse));
