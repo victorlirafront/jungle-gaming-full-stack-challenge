@@ -35,6 +35,7 @@ const createMockUser = (overrides = {}): User => ({
   password: '$2b$10$hashedPassword',
   fullName: 'Test User',
   isActive: true,
+  refreshTokens: [],
   createdAt: new Date(),
   updatedAt: new Date(),
   ...overrides,
