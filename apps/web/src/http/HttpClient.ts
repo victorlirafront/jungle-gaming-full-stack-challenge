@@ -134,9 +134,6 @@ export class HttpClient {
     });
 
     if (!response.ok) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-
       if (this.onTokenExpiredCallback) {
         this.onTokenExpiredCallback();
       }
@@ -213,7 +210,7 @@ export class HttpClient {
     }
 
     if (!res.ok) {
-      if (res.status === 401 && originalRequest && !res.url.includes('/auth/refresh')) {
+      if (res.status === 401 && originalRequest && !res.url.includes('/auth/refresh') && !res.url.includes('/auth/login') && !res.url.includes('/auth/register')) {
         return this.handleTokenRefresh<T>(originalRequest);
       }
 

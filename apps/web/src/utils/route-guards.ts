@@ -1,15 +1,17 @@
 import { redirect } from '@tanstack/react-router';
 
 export function requireAuth() {
-  const isAuthenticated = localStorage.getItem('accessToken');
-  if (!isAuthenticated) {
+  const accessToken = localStorage.getItem('accessToken');
+
+  if (!accessToken) {
+    localStorage.removeItem('auth-storage');
     throw redirect({ to: '/login' });
   }
 }
 
 export function redirectIfAuthenticated() {
-  const isAuthenticated = localStorage.getItem('accessToken');
-  if (isAuthenticated) {
+  const accessToken = localStorage.getItem('accessToken');
+  if (accessToken) {
     throw redirect({ to: '/' });
   }
 }
