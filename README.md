@@ -250,6 +250,7 @@ yarn migration:run
 - ✅ Docker entrypoints automáticos
 
 ## 📌 Diferenciais (Extras)
+- ✅ Continuous Integration com Github Actions
 - ✅ Página de perfil do usuário (visualizar e editar)
 - ✅ Reset de senha
 ## Licença
