@@ -67,5 +67,51 @@ describe('NotificationsService', () => {
       expect(result).toEqual(mockNotification);
     });
   });
+
+  describe('findAllByUser', () => {
+    const userId = 'user-123';
+
+    it('should return user notifications ordered by date with default limit', async () => {
+      const mockNotifications = [
+        createMockNotification({ id: 'notif-1', userId }),
+        createMockNotification({ id: 'notif-2', userId }),
+      ];
+
+      notificationRepository.find.mockResolvedValue(mockNotifications);
+
+      const result = await service.findAllByUser(userId);
+
+      expect(notificationRepository.find).toHaveBeenCalledWith({
+        where: { userId },
+        order: { createdAt: 'DESC' },
+        take: 50,
+      });
+      expect(result).toEqual(mockNotifications);
+    });
+
+    it('should apply custom limit when provided', async () => {
+      const mockNotifications = [createMockNotification({ userId })];
+      const customLimit = 10;
+
+      notificationRepository.find.mockResolvedValue(mockNotifications);
+
+      const result = await service.findAllByUser(userId, customLimit);
+
+      expect(notificationRepository.find).toHaveBeenCalledWith({
+        where: { userId },
+        order: { createdAt: 'DESC' },
+        take: customLimit,
+      });
+      expect(result).toEqual(mockNotifications);
+    });
+
+    it('should return empty array when user has no notifications', async () => {
+      notificationRepository.find.mockResolvedValue([]);
+
+      const result = await service.findAllByUser(userId);
+
+      expect(result).toEqual([]);
+    });
+  });
 });
 
