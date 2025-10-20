@@ -254,6 +254,7 @@ yarn migration:run
 - ✅ Página de perfil do usuário (visualizar e editar)
 - ✅ Reset de senha
 - ✅ Testes unitários completos para os microserviços (Auth, Tasks, Notifications)
+- ✅ Health checks nos serviços
 ## Licença
 
 MIT
