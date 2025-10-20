@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotificationsService } from './notifications.service';
-import { Notification, NotificationType } from '../../entities/notification.entity';
+import { Notification, NotificationType } from '../../../entities/notification.entity';
 
 const mockNotificationRepository = {
   create: jest.fn(),

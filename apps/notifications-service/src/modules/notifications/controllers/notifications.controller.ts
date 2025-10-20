@@ -1,14 +1,14 @@
 import { Controller, Inject } from '@nestjs/common';
 import { MessagePattern, Payload, ClientProxy } from '@nestjs/microservices';
-import { NotificationsService } from './notifications.service';
-import { NotificationType } from '../../entities/notification.entity';
+import { NotificationsService } from '../services/notifications.service';
+import { NotificationType } from '../../../entities/notification.entity';
 import {
   TaskCreatedEvent,
   TaskUpdatedEvent,
   TaskStatusChangedEvent,
   TaskCommentedEvent,
   TaskDeletedEvent,
-} from './interfaces/task-events.interface';
+} from '../interfaces/task-events.interface';
 
 @Controller()
 export class NotificationsController {
