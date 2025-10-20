@@ -25,6 +25,7 @@ const mockRepositories = {
     save: jest.fn(),
     findOne: jest.fn(),
     find: jest.fn(),
+    remove: jest.fn(),
     createQueryBuilder: jest.fn(() => mockQueryBuilder),
   },
   comment: {
@@ -237,6 +238,47 @@ describe('TasksService', () => {
       ).rejects.toThrow('Only the task creator can edit this task');
 
       expect(taskRepository.save).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('remove', () => {
+    const taskId = 'task-123';
+    const userId = 'user-123';
+
+    it('should remove a task successfully', async () => {
+      const mockTask = createMockTask({ id: taskId, title: 'Task to Delete' });
+
+      taskRepository.findOne.mockResolvedValue(mockTask);
+      taskRepository.remove.mockResolvedValue(mockTask);
+      historyRepository.save.mockResolvedValue({});
+
+      await service.remove(taskId, userId);
+
+      expect(taskRepository.findOne).toHaveBeenCalledWith({
+        where: { id: taskId },
+        relations: ['assignments', 'comments'],
+      });
+      expect(historyRepository.save).toHaveBeenCalledWith({
+        taskId,
+        userId,
+        action: 'DELETED',
+        details: `Task "${mockTask.title}" deleted`,
+      });
+      expect(taskRepository.remove).toHaveBeenCalledWith(mockTask);
+      expect(notificationsClient.emit).toHaveBeenCalledWith('task.deleted', {
+        taskId,
+        title: mockTask.title,
+        userId,
+      });
+    });
+
+    it('should throw NotFoundException when task does not exist', async () => {
+      taskRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.remove(taskId, userId)).rejects.toThrow(NotFoundException);
+
+      expect(taskRepository.remove).not.toHaveBeenCalled();
+      expect(historyRepository.save).not.toHaveBeenCalled();
     });
   });
 });
