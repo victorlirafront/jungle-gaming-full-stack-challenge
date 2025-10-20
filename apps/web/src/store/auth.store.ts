@@ -82,6 +82,9 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: false,
           error: null,
         });
+        setTimeout(() => {
+          localStorage.removeItem('auth-storage');
+        }, 0);
       },
 
       clearError: () => set({ error: null }),
