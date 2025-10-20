@@ -2,8 +2,8 @@ import { Body, Controller, Get, Inject, Post, UseGuards, Put, Request } from '@n
 import { ClientProxy } from '@nestjs/microservices';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { firstValueFrom } from 'rxjs';
-import { RegisterDto, LoginDto, RefreshTokenDto, UpdateProfileDto, ChangePasswordDto } from './dto';
-import { JwtAuthGuard } from '../../common';
+import { RegisterDto, LoginDto, RefreshTokenDto, UpdateProfileDto, ChangePasswordDto } from '../dto';
+import { JwtAuthGuard } from '../../../common';
 
 @ApiTags('Authentication')
 @Controller('auth')

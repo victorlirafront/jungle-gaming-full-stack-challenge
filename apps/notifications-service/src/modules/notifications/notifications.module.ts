@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { Notification } from '../../entities/notification.entity';
-import { NotificationsService } from './notifications.service';
-import { NotificationsController } from './notifications.controller';
+import { NotificationsService } from './services/notifications.service';
+import { NotificationsController } from './controllers/notifications.controller';
 
 @Module({
   imports: [

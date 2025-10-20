@@ -13,7 +13,7 @@ import {
 import { ClientProxy } from '@nestjs/microservices';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { firstValueFrom } from 'rxjs';
-import { JwtAuthGuard, CurrentUser, JwtPayload } from '../../common';
+import { JwtAuthGuard, CurrentUser, JwtPayload } from '../../../common';
 import {
   CreateTaskDto,
   UpdateTaskDto,
@@ -21,7 +21,7 @@ import {
   CreateCommentDto,
   GetCommentsDto,
   GetHistoryDto,
-} from './dto';
+} from '../dto';
 
 @ApiTags('tasks')
 @Controller('tasks')
