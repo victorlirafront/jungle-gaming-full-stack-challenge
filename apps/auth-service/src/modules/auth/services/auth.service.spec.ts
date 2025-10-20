@@ -66,6 +66,114 @@ describe('AuthService', () => {
     jest.clearAllMocks();
   });
 
+  describe('register', () => {
+    const registerDto = {
+      email: 'newuser@example.com',
+      username: 'newuser',
+      password: 'Password123',
+      fullName: 'New User',
+    };
+
+    it('should register a new user successfully', async () => {
+      const mockUser = createMockUser({
+        email: registerDto.email,
+        username: registerDto.username,
+        fullName: registerDto.fullName,
+      });
+      const mockAccessToken = 'access-token-123';
+      const mockRefreshTokenValue = 'refresh-token-123';
+
+      userRepository.findOne.mockResolvedValue(null);
+      (bcrypt.hash as jest.Mock).mockResolvedValue('$2b$10$hashedPassword');
+      userRepository.create.mockReturnValue(mockUser);
+      userRepository.save.mockResolvedValue(mockUser);
+      jwtService.signAsync.mockResolvedValueOnce(mockAccessToken).mockResolvedValueOnce(mockRefreshTokenValue);
+      refreshTokenRepository.create.mockReturnValue({ token: mockRefreshTokenValue });
+      refreshTokenRepository.save.mockResolvedValue({ token: mockRefreshTokenValue });
+
+      const result = await service.register(registerDto);
+
+      expect(userRepository.findOne).toHaveBeenCalledWith({
+        where: [{ email: registerDto.email }, { username: registerDto.username }],
+      });
+      expect(bcrypt.hash).toHaveBeenCalledWith(registerDto.password, 10);
+      expect(userRepository.create).toHaveBeenCalledWith({
+        email: registerDto.email,
+        username: registerDto.username,
+        password: '$2b$10$hashedPassword',
+        fullName: registerDto.fullName,
+      });
+      expect(userRepository.save).toHaveBeenCalledWith(mockUser);
+      expect(result).toHaveProperty('accessToken', mockAccessToken);
+      expect(result).toHaveProperty('refreshToken', mockRefreshTokenValue);
+      expect(result.user).toMatchObject({
+        id: mockUser.id,
+        email: mockUser.email,
+        username: mockUser.username,
+      });
+    });
+
+    it('should throw ConflictException when email already exists', async () => {
+      const existingUser = createMockUser({ email: registerDto.email });
+
+      userRepository.findOne.mockResolvedValue(existingUser);
+
+      await expect(service.register(registerDto)).rejects.toThrow('Email already exists');
+
+      expect(bcrypt.hash).not.toHaveBeenCalled();
+      expect(userRepository.create).not.toHaveBeenCalled();
+    });
+
+    it('should throw ConflictException when username already exists', async () => {
+      const existingUser = createMockUser({
+        email: 'different@example.com',
+        username: registerDto.username,
+      });
+
+      userRepository.findOne.mockResolvedValue(existingUser);
+
+      await expect(service.register(registerDto)).rejects.toThrow('Username already exists');
+
+      expect(bcrypt.hash).not.toHaveBeenCalled();
+      expect(userRepository.create).not.toHaveBeenCalled();
+    });
+
+    it('should hash password with correct salt rounds', async () => {
+      const mockUser = createMockUser();
+
+      userRepository.findOne.mockResolvedValue(null);
+      (bcrypt.hash as jest.Mock).mockResolvedValue('$2b$10$hashedPassword');
+      userRepository.create.mockReturnValue(mockUser);
+      userRepository.save.mockResolvedValue(mockUser);
+      jwtService.signAsync.mockResolvedValue('token');
+      refreshTokenRepository.create.mockReturnValue({ token: 'refresh' });
+      refreshTokenRepository.save.mockResolvedValue({ token: 'refresh' });
+
+      await service.register(registerDto);
+
+      expect(bcrypt.hash).toHaveBeenCalledWith(registerDto.password, 10);
+    });
+
+    it('should generate tokens after successful registration', async () => {
+      const mockUser = createMockUser();
+
+      userRepository.findOne.mockResolvedValue(null);
+      (bcrypt.hash as jest.Mock).mockResolvedValue('$2b$10$hashedPassword');
+      userRepository.create.mockReturnValue(mockUser);
+      userRepository.save.mockResolvedValue(mockUser);
+      jwtService.signAsync.mockResolvedValue('token');
+      refreshTokenRepository.create.mockReturnValue({ token: 'refresh' });
+      refreshTokenRepository.save.mockResolvedValue({ token: 'refresh' });
+
+      const result = await service.register(registerDto);
+
+      expect(jwtService.signAsync).toHaveBeenCalledTimes(2);
+      expect(refreshTokenRepository.save).toHaveBeenCalled();
+      expect(result).toHaveProperty('accessToken');
+      expect(result).toHaveProperty('refreshToken');
+    });
+  });
+
   describe('login', () => {
     const loginDto = {
       emailOrUsername: 'test@example.com',
