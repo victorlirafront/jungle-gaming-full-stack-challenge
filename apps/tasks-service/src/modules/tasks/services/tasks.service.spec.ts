@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import { Task, Comment, TaskAssignment, TaskHistory } from '../../entities';
+import { Task, Comment, TaskAssignment, TaskHistory } from '../../../entities';
 import { TaskPriority, TaskStatus } from '@repo/types';
 
 const mockNotificationsClient = {

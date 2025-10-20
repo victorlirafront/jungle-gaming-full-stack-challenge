@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { TasksService } from './tasks.service';
+import { TasksService } from '../services/tasks.service';
 import {
   CreateTaskDto,
   UpdateTaskDto,
@@ -8,7 +8,7 @@ import {
   CreateCommentDto,
   GetCommentsDto,
   GetHistoryDto,
-} from './dto';
+} from '../dto';
 
 @Controller()
 export class TasksController {

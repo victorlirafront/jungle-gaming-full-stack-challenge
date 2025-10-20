@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ForbiddenException, Inject } from '@nest
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ClientProxy } from '@nestjs/microservices';
-import { Task, Comment, TaskAssignment, TaskHistory } from '../../entities';
+import { Task, Comment, TaskAssignment, TaskHistory } from '../../../entities';
 import {
   CreateTaskDto,
   UpdateTaskDto,
@@ -10,7 +10,7 @@ import {
   CreateCommentDto,
   GetCommentsDto,
   GetHistoryDto,
-} from './dto';
+} from '../dto';
 
 @Injectable()
 export class TasksService {
