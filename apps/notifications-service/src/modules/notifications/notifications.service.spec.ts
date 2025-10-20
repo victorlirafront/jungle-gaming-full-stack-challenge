@@ -113,5 +113,53 @@ describe('NotificationsService', () => {
       expect(result).toEqual([]);
     });
   });
+
+  describe('markAsRead', () => {
+    const notificationId = 'notif-123';
+    const userId = 'user-123';
+
+    it('should mark notification as read successfully', async () => {
+      const mockNotification = createMockNotification({ id: notificationId, userId, read: false });
+      const updatedNotification = { ...mockNotification, read: true };
+
+      notificationRepository.findOne.mockResolvedValue(mockNotification);
+      notificationRepository.save.mockResolvedValue(updatedNotification);
+
+      const result = await service.markAsRead(notificationId, userId);
+
+      expect(notificationRepository.findOne).toHaveBeenCalledWith({
+        where: { id: notificationId, userId },
+      });
+      expect(notificationRepository.save).toHaveBeenCalledWith({
+        ...mockNotification,
+        read: true,
+      });
+      expect(result.read).toBe(true);
+    });
+
+    it('should throw error when notification is not found', async () => {
+      notificationRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.markAsRead(notificationId, userId)).rejects.toThrow(
+        'Notification not found'
+      );
+
+      expect(notificationRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('should validate that notification belongs to user', async () => {
+      const differentUserId = 'different-user-456';
+
+      notificationRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.markAsRead(notificationId, differentUserId)).rejects.toThrow(
+        'Notification not found'
+      );
+
+      expect(notificationRepository.findOne).toHaveBeenCalledWith({
+        where: { id: notificationId, userId: differentUserId },
+      });
+    });
+  });
 });
 
