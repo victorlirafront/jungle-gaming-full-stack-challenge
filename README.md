@@ -253,6 +253,7 @@ yarn migration:run
 - ✅ Continuous Integration com Github Actions
 - ✅ Página de perfil do usuário (visualizar e editar)
 - ✅ Reset de senha
+- ✅ Testes unitários completos para os microserviços (Auth, Tasks, Notifications)
 ## Licença
 
 MIT
