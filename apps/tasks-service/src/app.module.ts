@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TasksModule } from './modules/tasks/tasks.module';
+import { HealthModule } from './modules/health/health.module';
 import { Task, Comment, TaskAssignment, TaskHistory } from './entities';
 
 @Module({
@@ -16,6 +17,7 @@ import { Task, Comment, TaskAssignment, TaskHistory } from './entities';
       synchronize: process.env.NODE_ENV === 'development',
     }),
     TasksModule,
+    HealthModule,
   ],
   controllers: [],
   providers: [],
