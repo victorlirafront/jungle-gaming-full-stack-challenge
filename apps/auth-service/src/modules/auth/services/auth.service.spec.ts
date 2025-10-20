@@ -266,5 +266,100 @@ describe('AuthService', () => {
       expect(jwtService.signAsync).not.toHaveBeenCalled();
     });
   });
+
+  describe('refreshTokens', () => {
+    const refreshTokenDto = {
+      refreshToken: 'refresh-token-123',
+    };
+
+    it('should refresh tokens successfully with valid refresh token', async () => {
+      const mockUser = createMockUser();
+      const mockStoredToken = {
+        id: 'token-id-123',
+        token: refreshTokenDto.refreshToken,
+        userId: mockUser.id,
+        expiresAt: new Date(Date.now() + 86400000),
+        revoked: false,
+        createdAt: new Date(),
+        user: mockUser,
+      };
+      const newAccessToken = 'new-access-token';
+      const newRefreshToken = 'new-refresh-token';
+
+      refreshTokenRepository.findOne.mockResolvedValue(mockStoredToken);
+      jwtService.verifyAsync.mockResolvedValue({});
+      refreshTokenRepository.save.mockResolvedValueOnce({ ...mockStoredToken, revoked: true });
+      jwtService.signAsync.mockResolvedValueOnce(newAccessToken).mockResolvedValueOnce(newRefreshToken);
+      refreshTokenRepository.create.mockReturnValue({ token: newRefreshToken });
+      refreshTokenRepository.save.mockResolvedValueOnce({ token: newRefreshToken });
+
+      const result = await service.refreshTokens(refreshTokenDto);
+
+      expect(refreshTokenRepository.findOne).toHaveBeenCalledWith({
+        where: { token: refreshTokenDto.refreshToken },
+        relations: ['user'],
+      });
+      expect(jwtService.verifyAsync).toHaveBeenCalledWith(
+        refreshTokenDto.refreshToken,
+        expect.objectContaining({ secret: expect.any(String) })
+      );
+      expect(refreshTokenRepository.save).toHaveBeenCalledWith({
+        ...mockStoredToken,
+        revoked: true,
+      });
+      expect(jwtService.signAsync).toHaveBeenCalledTimes(2);
+      expect(result).toHaveProperty('accessToken', newAccessToken);
+      expect(result).toHaveProperty('refreshToken', newRefreshToken);
+    });
+
+    it('should throw UnauthorizedException when refresh token does not exist', async () => {
+      refreshTokenRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.refreshTokens(refreshTokenDto)).rejects.toThrow(UnauthorizedException);
+      await expect(service.refreshTokens(refreshTokenDto)).rejects.toThrow('Invalid refresh token');
+
+      expect(jwtService.signAsync).not.toHaveBeenCalled();
+    });
+
+    it('should throw UnauthorizedException when refresh token is revoked', async () => {
+      const mockUser = createMockUser();
+      const mockStoredToken = {
+        id: 'token-id-123',
+        token: refreshTokenDto.refreshToken,
+        userId: mockUser.id,
+        expiresAt: new Date(Date.now() + 86400000),
+        revoked: true,
+        createdAt: new Date(),
+        user: mockUser,
+      };
+
+      refreshTokenRepository.findOne.mockResolvedValue(mockStoredToken);
+
+      await expect(service.refreshTokens(refreshTokenDto)).rejects.toThrow(UnauthorizedException);
+      await expect(service.refreshTokens(refreshTokenDto)).rejects.toThrow('Refresh token has been revoked');
+
+      expect(jwtService.signAsync).not.toHaveBeenCalled();
+    });
+
+    it('should throw UnauthorizedException when refresh token is expired', async () => {
+      const mockUser = createMockUser();
+      const mockStoredToken = {
+        id: 'token-id-123',
+        token: refreshTokenDto.refreshToken,
+        userId: mockUser.id,
+        expiresAt: new Date(Date.now() - 86400000),
+        revoked: false,
+        createdAt: new Date(),
+        user: mockUser,
+      };
+
+      refreshTokenRepository.findOne.mockResolvedValue(mockStoredToken);
+
+      await expect(service.refreshTokens(refreshTokenDto)).rejects.toThrow(UnauthorizedException);
+      await expect(service.refreshTokens(refreshTokenDto)).rejects.toThrow('Refresh token has expired');
+
+      expect(jwtService.signAsync).not.toHaveBeenCalled();
+    });
+  });
 });
 
