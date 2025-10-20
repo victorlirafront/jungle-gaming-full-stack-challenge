@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { NotificationsGateway } from './notifications.gateway';
-import { NotificationsController } from './notifications.controller';
+import { NotificationsGateway } from './controllers/notifications.gateway';
+import { NotificationsController } from './controllers/notifications.controller';
 
 @Module({
   imports: [
