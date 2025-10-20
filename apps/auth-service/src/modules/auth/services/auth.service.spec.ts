@@ -361,5 +361,99 @@ describe('AuthService', () => {
       expect(jwtService.signAsync).not.toHaveBeenCalled();
     });
   });
+
+  describe('changePassword', () => {
+    const userId = 'user-123';
+    const changePasswordDto = {
+      currentPassword: 'OldPassword123',
+      newPassword: 'NewPassword123',
+    };
+
+    it('should change password successfully with correct current password', async () => {
+      const mockUser = createMockUser({ id: userId });
+      const newHashedPassword = '$2b$10$newHashedPassword';
+
+      userRepository.findOne.mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      (bcrypt.hash as jest.Mock).mockResolvedValue(newHashedPassword);
+      userRepository.save.mockResolvedValue(mockUser);
+      refreshTokenRepository.delete.mockResolvedValue({});
+
+      const result = await service.changePassword(userId, changePasswordDto);
+
+      expect(userRepository.findOne).toHaveBeenCalledWith({ where: { id: userId } });
+      expect(bcrypt.compare).toHaveBeenCalled();
+      expect(bcrypt.hash).toHaveBeenCalledWith(changePasswordDto.newPassword, 10);
+      expect(userRepository.save).toHaveBeenCalled();
+      expect(refreshTokenRepository.delete).toHaveBeenCalledWith({ userId });
+      expect(result).toEqual({ message: 'Password changed successfully' });
+    });
+
+    it('should throw NotFoundException when user does not exist', async () => {
+      userRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.changePassword(userId, changePasswordDto)).rejects.toThrow('User not found');
+
+      expect(bcrypt.compare).not.toHaveBeenCalled();
+      expect(userRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('should throw UnauthorizedException when current password is incorrect', async () => {
+      const mockUser = createMockUser({ id: userId });
+
+      userRepository.findOne.mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+
+      await expect(service.changePassword(userId, changePasswordDto)).rejects.toThrow(UnauthorizedException);
+      await expect(service.changePassword(userId, changePasswordDto)).rejects.toThrow('Current password is incorrect');
+
+      expect(bcrypt.hash).not.toHaveBeenCalled();
+      expect(userRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('should revoke all refresh tokens after password change', async () => {
+      const mockUser = createMockUser({ id: userId });
+
+      userRepository.findOne.mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      (bcrypt.hash as jest.Mock).mockResolvedValue('$2b$10$newHashedPassword');
+      userRepository.save.mockResolvedValue(mockUser);
+      refreshTokenRepository.delete.mockResolvedValue({});
+
+      await service.changePassword(userId, changePasswordDto);
+
+      expect(refreshTokenRepository.delete).toHaveBeenCalledWith({ userId });
+    });
+  });
+
+  describe('validateUser', () => {
+    const userId = 'user-123';
+
+    it('should return user when user exists and is active', async () => {
+      const mockUser = createMockUser({ id: userId, isActive: true });
+
+      userRepository.findOne.mockResolvedValue(mockUser);
+
+      const result = await service.validateUser(userId);
+
+      expect(userRepository.findOne).toHaveBeenCalledWith({ where: { id: userId } });
+      expect(result).toEqual(mockUser);
+    });
+
+    it('should throw NotFoundException when user does not exist', async () => {
+      userRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.validateUser(userId)).rejects.toThrow('User not found');
+    });
+
+    it('should throw UnauthorizedException when user account is inactive', async () => {
+      const mockUser = createMockUser({ id: userId, isActive: false });
+
+      userRepository.findOne.mockResolvedValue(mockUser);
+
+      await expect(service.validateUser(userId)).rejects.toThrow(UnauthorizedException);
+      await expect(service.validateUser(userId)).rejects.toThrow('User account is inactive');
+    });
+  });
 });
 
