@@ -7,6 +7,7 @@ import { registerSchema, type RegisterFormData } from '@/validations';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
+import { logger } from '@/utils/logger';
 
 export function Register() {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ export function Register() {
       await registerUser(data);
       navigate({ to: '/' });
     } catch (err) {
-      console.error('Registration error:', err);
+      logger.error('Registration failed', err);
     }
   };
 

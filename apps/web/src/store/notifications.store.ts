@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Notification, webSocketService } from '@/services';
+import { logger } from '@/utils/logger';
 
 interface NotificationsState {
   notifications: Notification[];
@@ -55,7 +56,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
       set({ notifications });
       get().updateUnreadCount();
     } catch (error) {
-      console.error('Error loading notifications:', error);
+      logger.error('Failed to load notifications', error);
     } finally {
       set({ isLoading: false });
     }
@@ -73,7 +74,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
 
       get().updateUnreadCount();
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      logger.error('Failed to mark notification as read', error);
     }
   },
 
@@ -86,7 +87,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
         unreadCount: 0,
       }));
     } catch (error) {
-      console.error('Error marking all notifications as read:', error);
+      logger.error('Failed to mark all notifications as read', error);
     }
   },
 

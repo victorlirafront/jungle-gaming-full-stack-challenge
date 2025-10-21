@@ -1,4 +1,5 @@
 import { io, Socket } from 'socket.io-client';
+import { logger } from '@/utils/logger';
 
 export interface Notification {
   id: string;
@@ -47,7 +48,7 @@ export class WebSocketService {
     });
 
     this.socket.on('connect_error', (error) => {
-      console.error('WebSocket connection error:', error);
+      logger.error('WebSocket connection failed', error);
     });
   }
 

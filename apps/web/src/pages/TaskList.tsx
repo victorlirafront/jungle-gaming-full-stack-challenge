@@ -12,6 +12,7 @@ import { TaskStatus, TaskPriority } from '@repo/types';
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask } from '@/hooks/useTasks';
 import { useToastStore } from '@/store/toast.store';
 import type { Task } from '@/types/task.types';
+import { logger } from '@/utils/logger';
 
 export function TaskList() {
   const navigate = useNavigate();
@@ -73,7 +74,7 @@ export function TaskList() {
         message: `"${newTask.title}" foi adicionada.`,
       });
     } catch (error) {
-      console.error('Error creating task:', error);
+      logger.error('Failed to create task', error);
       addToast({
         type: 'error',
         title: 'Erro ao criar tarefa',
@@ -104,7 +105,7 @@ export function TaskList() {
         message: `"${updatedTask.title}" foi atualizada.`,
       });
     } catch (error) {
-      console.error('Error updating task:', error);
+      logger.error('Failed to update task', error);
       addToast({
         type: 'error',
         title: 'Erro ao atualizar tarefa',
@@ -122,7 +123,7 @@ export function TaskList() {
           title: 'Tarefa deletada!',
         });
       } catch (error) {
-        console.error('Error deleting task:', error);
+        logger.error('Failed to delete task', error);
         addToast({
           type: 'error',
           title: 'Erro ao deletar tarefa',
