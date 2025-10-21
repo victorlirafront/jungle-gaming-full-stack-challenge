@@ -5,6 +5,7 @@ import { UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
 import { User, RefreshToken } from '../../../entities';
+import { AUTH_CONSTANTS } from '../../../common';
 
 jest.mock('bcrypt');
 
@@ -97,7 +98,7 @@ describe('AuthService', () => {
       expect(userRepository.findOne).toHaveBeenCalledWith({
         where: [{ email: registerDto.email }, { username: registerDto.username }],
       });
-      expect(bcrypt.hash).toHaveBeenCalledWith(registerDto.password, 10);
+      expect(bcrypt.hash).toHaveBeenCalledWith(registerDto.password, AUTH_CONSTANTS.BCRYPT_SALT_ROUNDS);
       expect(userRepository.create).toHaveBeenCalledWith({
         email: registerDto.email,
         username: registerDto.username,
@@ -152,7 +153,7 @@ describe('AuthService', () => {
 
       await service.register(registerDto);
 
-      expect(bcrypt.hash).toHaveBeenCalledWith(registerDto.password, 10);
+      expect(bcrypt.hash).toHaveBeenCalledWith(registerDto.password, AUTH_CONSTANTS.BCRYPT_SALT_ROUNDS);
     });
 
     it('should generate tokens after successful registration', async () => {
@@ -384,7 +385,7 @@ describe('AuthService', () => {
 
       expect(userRepository.findOne).toHaveBeenCalledWith({ where: { id: userId } });
       expect(bcrypt.compare).toHaveBeenCalled();
-      expect(bcrypt.hash).toHaveBeenCalledWith(changePasswordDto.newPassword, 10);
+      expect(bcrypt.hash).toHaveBeenCalledWith(changePasswordDto.newPassword, AUTH_CONSTANTS.BCRYPT_SALT_ROUNDS);
       expect(userRepository.save).toHaveBeenCalled();
       expect(refreshTokenRepository.delete).toHaveBeenCalledWith({ userId });
       expect(result).toEqual({ message: 'Password changed successfully' });
