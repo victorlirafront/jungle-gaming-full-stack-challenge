@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  Index,
 } from 'typeorm';
 import { TaskPriority, TaskStatus } from '@repo/types';
 import { Comment } from './comment.entity';
@@ -12,6 +13,11 @@ import { TaskAssignment } from './task-assignment.entity';
 import { TaskHistory } from './task-history.entity';
 
 @Entity('tasks')
+@Index(['creatorId'])
+@Index(['status'])
+@Index(['priority'])
+@Index(['createdAt'])
+@Index(['creatorId', 'status'])
 export class Task {
   @PrimaryGeneratedColumn('uuid')
   id: string;

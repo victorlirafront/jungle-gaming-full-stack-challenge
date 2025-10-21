@@ -5,10 +5,14 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Task } from './task.entity';
 
 @Entity('task_history')
+@Index(['taskId'])
+@Index(['userId'])
+@Index(['taskId', 'createdAt'])
 export class TaskHistory {
   @PrimaryGeneratedColumn('uuid')
   id: string;

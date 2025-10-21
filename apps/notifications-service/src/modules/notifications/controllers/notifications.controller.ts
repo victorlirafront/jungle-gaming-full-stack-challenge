@@ -154,8 +154,8 @@ export class NotificationsController {
   }
 
   @MessagePattern('notifications.findAll')
-  async findAll(@Payload() data: { userId: string; limit?: number }) {
-    return this.notificationsService.findAllByUser(data.userId, data.limit);
+  async findAll(@Payload() data: { userId: string; limit?: number; offset?: number }) {
+    return this.notificationsService.findAllByUser(data.userId, data.limit, data.offset);
   }
 
   @MessagePattern('notifications.markAsRead')

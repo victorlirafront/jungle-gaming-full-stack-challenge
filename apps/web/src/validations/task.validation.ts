@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { TaskPriority, TaskStatus } from '@repo/types';
+import { APP_CONSTANTS } from '@/constants/app.constants';
 
 export const taskSchema = z.object({
   title: z
@@ -8,7 +9,7 @@ export const taskSchema = z.object({
     .max(200, 'Título deve ter no máximo 200 caracteres'),
   description: z
     .string()
-    .max(1000, 'Descrição deve ter no máximo 1000 caracteres')
+    .max(APP_CONSTANTS.VALIDATION.TASK_DESCRIPTION_MAX_LENGTH, `Descrição deve ter no máximo ${APP_CONSTANTS.VALIDATION.TASK_DESCRIPTION_MAX_LENGTH} caracteres`)
     .optional(),
   priority: z.nativeEnum(TaskPriority, {
     errorMap: () => ({ message: 'Prioridade inválida' }),

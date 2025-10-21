@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { authService } from '@/services';
 import { useAuthStore } from '@/store/auth.store';
+import { APP_CONSTANTS } from '@/constants/app.constants';
 
 export const USERS_QUERY_KEY = 'users';
 
@@ -10,7 +11,7 @@ export function useUsers() {
   return useQuery({
     queryKey: [USERS_QUERY_KEY],
     queryFn: () => authService.getAllUsers(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: APP_CONSTANTS.CACHE.USERS_STALE_TIME_MS,
     enabled: isAuthenticated,
   });
 }

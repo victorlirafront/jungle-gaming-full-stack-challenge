@@ -13,6 +13,7 @@ import { useTask, useCreateComment, useUpdateTask } from '@/hooks/useTasks';
 import { useUsersByIds } from '@/hooks/useUsers';
 import { useAuthStore } from '@/store/auth.store';
 import { useToastStore } from '@/store/toast.store';
+import { logger } from '@/utils/logger';
 
 interface TaskDetailProps {
   taskId: string;
@@ -75,7 +76,7 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
         title: 'Comentário adicionado!',
       });
     } catch (error) {
-      console.error('Error adding comment:', error);
+      logger.error('Failed to add comment', error);
       addToast({
         type: 'error',
         title: 'Erro ao adicionar comentário',
@@ -106,7 +107,7 @@ export function TaskDetail({ taskId, onBack }: TaskDetailProps) {
         message: `"${updatedTask.title}" foi atualizada.`,
       });
     } catch (error) {
-      console.error('Error updating task:', error);
+      logger.error('Failed to update task', error);
       addToast({
         type: 'error',
         title: 'Erro ao atualizar tarefa',

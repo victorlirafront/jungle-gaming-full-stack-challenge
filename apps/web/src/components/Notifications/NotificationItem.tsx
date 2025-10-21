@@ -1,4 +1,5 @@
 import { Notification } from '@/services';
+import { APP_CONSTANTS } from '@/constants/app.constants';
 
 interface NotificationItemProps {
   notification: Notification;
@@ -27,12 +28,19 @@ const getNotificationIcon = (type: string) => {
 const getTimeAgo = (date: string) => {
   const now = new Date();
   const notificationDate = new Date(date);
-  const diffInSeconds = Math.floor((now.getTime() - notificationDate.getTime()) / 1000);
+  const diffInSeconds = Math.floor((now.getTime() - notificationDate.getTime()) / APP_CONSTANTS.TIME.MS_IN_SECOND);
 
-  if (diffInSeconds < 60) return 'Agora há pouco';
-  if (diffInSeconds < 3600) return `Há ${Math.floor(diffInSeconds / 60)} min`;
-  if (diffInSeconds < 86400) return `Há ${Math.floor(diffInSeconds / 3600)} h`;
-  return `Há ${Math.floor(diffInSeconds / 86400)} dias`;
+  const SECONDS_IN_HOUR = APP_CONSTANTS.TIME.SECONDS_IN_MINUTE * APP_CONSTANTS.TIME.MINUTES_IN_HOUR;
+  const SECONDS_IN_DAY = SECONDS_IN_HOUR * APP_CONSTANTS.TIME.HOURS_IN_DAY;
+
+  if (diffInSeconds < APP_CONSTANTS.TIME.SECONDS_IN_MINUTE) return 'Agora há pouco';
+  if (diffInSeconds < SECONDS_IN_HOUR) {
+    return `Há ${Math.floor(diffInSeconds / APP_CONSTANTS.TIME.SECONDS_IN_MINUTE)} min`;
+  }
+  if (diffInSeconds < SECONDS_IN_DAY) {
+    return `Há ${Math.floor(diffInSeconds / SECONDS_IN_HOUR)} h`;
+  }
+  return `Há ${Math.floor(diffInSeconds / SECONDS_IN_DAY)} dias`;
 };
 
 export function NotificationItem({ notification, onRead }: NotificationItemProps) {

@@ -9,6 +9,7 @@ import { Select } from '../ui/Select';
 import { Button } from '../ui/Button';
 import { TaskFormProps } from './index.types';
 import { authService } from '@/services';
+import { logger } from '@/utils/logger';
 
 export function TaskForm({ onSubmit, onCancel, initialData }: TaskFormProps) {
   const [users, setUsers] = useState<Array<{ id: string; username: string; email: string }>>([]);
@@ -37,7 +38,7 @@ export function TaskForm({ onSubmit, onCancel, initialData }: TaskFormProps) {
         const usersData = await authService.getAllUsers();
         setUsers(usersData);
       } catch (error) {
-        console.error('Error loading users:', error);
+        logger.error('Failed to load users', error);
       } finally {
         setLoadingUsers(false);
       }

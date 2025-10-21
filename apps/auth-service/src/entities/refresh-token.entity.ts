@@ -5,10 +5,15 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { User } from './user.entity';
 
 @Entity('refresh_tokens')
+@Index(['token'])
+@Index(['userId'])
+@Index(['expiresAt'])
+@Index(['userId', 'revoked'])
 export class RefreshToken {
   @PrimaryGeneratedColumn('uuid')
   id!: string;

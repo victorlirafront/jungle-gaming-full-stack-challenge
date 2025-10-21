@@ -5,6 +5,7 @@ import { Button } from '../ui/Button';
 import type { TaskHistory } from '@/types/task.types';
 import { useUsers } from '@/hooks/useUsers';
 import { useTaskHistory } from '@/hooks/useTasks';
+import { APP_CONSTANTS } from '@/constants/app.constants';
 
 interface TaskHistoryProps {
   taskId: string;
@@ -27,7 +28,7 @@ const actionLabels = {
 export function TaskHistory({ taskId }: TaskHistoryProps) {
   const { data: allUsers = [] } = useUsers();
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = APP_CONSTANTS.PAGINATION.TASK_HISTORY_ITEMS_PER_PAGE;
 
   const offset = (currentPage - 1) * itemsPerPage;
   const { data: historyData, isLoading } = useTaskHistory(taskId, itemsPerPage, offset);

@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException, ForbiddenException, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Inject, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, LessThan } from 'typeorm';
 import { ClientProxy } from '@nestjs/microservices';
 import { Task, Comment, TaskAssignment, TaskHistory } from '../../../entities';
 import {
@@ -15,6 +15,8 @@ import { PAGINATION_CONSTANTS } from '../../../common/constants';
 
 @Injectable()
 export class TasksService {
+  private readonly logger = new Logger(TasksService.name);
+
   constructor(
     @InjectRepository(Task)
     private taskRepository: Repository<Task>,
@@ -97,8 +99,9 @@ export class TasksService {
       });
     }
 
-    const limit = filterDto.limit || 50;
-    const offset = filterDto.offset || 0;
+    const actualLimit = filterDto.limit || PAGINATION_CONSTANTS.TASKS_DEFAULT_LIMIT;
+    const limit = Math.min(actualLimit, PAGINATION_CONSTANTS.MAX_LIMIT);
+    const offset = filterDto.offset || PAGINATION_CONSTANTS.DEFAULT_OFFSET;
 
     query.take(limit).skip(offset);
     query.orderBy('task.createdAt', 'DESC');
@@ -276,7 +279,8 @@ export class TasksService {
       .where('comment.taskId = :taskId', { taskId })
       .orderBy('comment.createdAt', 'DESC');
 
-    const limit = getCommentsDto.limit || PAGINATION_CONSTANTS.DEFAULT_LIMIT;
+    const actualLimit = getCommentsDto.limit || PAGINATION_CONSTANTS.DEFAULT_LIMIT;
+    const limit = Math.min(actualLimit, PAGINATION_CONSTANTS.MAX_LIMIT);
     const offset = getCommentsDto.offset || PAGINATION_CONSTANTS.DEFAULT_OFFSET;
 
     query.take(limit).skip(offset);
@@ -297,7 +301,8 @@ export class TasksService {
       .where('history.taskId = :taskId', { taskId })
       .orderBy('history.createdAt', 'DESC');
 
-    const limit = getHistoryDto.limit || PAGINATION_CONSTANTS.DEFAULT_LIMIT;
+    const actualLimit = getHistoryDto.limit || PAGINATION_CONSTANTS.DEFAULT_LIMIT;
+    const limit = Math.min(actualLimit, PAGINATION_CONSTANTS.MAX_LIMIT);
     const offset = getHistoryDto.offset || PAGINATION_CONSTANTS.DEFAULT_OFFSET;
 
     query.take(limit).skip(offset);
@@ -305,6 +310,19 @@ export class TasksService {
     const [data, total] = await query.getManyAndCount();
 
     return { data, total };
+  }
+
+  async cleanOldHistory(): Promise<void> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - PAGINATION_CONSTANTS.HISTORY_RETENTION_DAYS);
+
+    const result = await this.historyRepository.delete({
+      createdAt: LessThan(cutoffDate),
+    });
+
+    if (result.affected && result.affected > 0) {
+      this.logger.log(`🧹 Cleaned ${result.affected} old task history records (older than ${PAGINATION_CONSTANTS.HISTORY_RETENTION_DAYS} days)`);
+    }
   }
 }
 

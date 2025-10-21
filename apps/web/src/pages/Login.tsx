@@ -7,6 +7,7 @@ import { loginSchema, type LoginFormData } from '@/validations';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
+import { logger } from '@/utils/logger';
 
 export function Login() {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ export function Login() {
       await login(data);
       navigate({ to: '/' });
     } catch (err) {
-      console.error('Login error:', err);
+      logger.error('Login failed', err);
     }
   };
 

@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, LessThan, MoreThan } from 'typeorm';
 import { Notification, NotificationType } from '../../../entities/notification.entity';
 import { NOTIFICATIONS_CONSTANTS } from '../../../common';
 
@@ -14,25 +14,62 @@ export interface CreateNotificationDto {
 
 @Injectable()
 export class NotificationsService {
+  private readonly logger = new Logger(NotificationsService.name);
+
   constructor(
     @InjectRepository(Notification)
     private notificationRepository: Repository<Notification>,
   ) {}
 
   async create(dto: CreateNotificationDto): Promise<Notification> {
+    await this.checkSpamProtection(dto.userId);
+
     const notification = this.notificationRepository.create(dto);
-    return this.notificationRepository.save(notification);
+    const saved = await this.notificationRepository.save(notification);
+    
+    this.logger.log(`📬 Notification created for user ${dto.userId}: ${dto.type}`);
+    
+    return saved;
   }
 
-  async findAllByUser(userId: string, limit?: number): Promise<Notification[]> {
+  private async checkSpamProtection(userId: string): Promise<void> {
+    const oneMinuteAgo = new Date(Date.now() - NOTIFICATIONS_CONSTANTS.RATE_LIMIT.CREATE.TTL);
+    
+    const recentCount = await this.notificationRepository.count({
+      where: {
+        userId,
+        createdAt: MoreThan(oneMinuteAgo),
+      },
+    });
+
+    if (recentCount >= NOTIFICATIONS_CONSTANTS.RATE_LIMIT.CREATE.LIMIT) {
+      this.logger.warn(`⚠️  Spam protection triggered for user ${userId}: ${recentCount} notifications in last minute`);
+      throw new BadRequestException('Too many notifications created. Please try again later.');
+    }
+  }
+
+  async findAllByUser(
+    userId: string, 
+    limit?: number, 
+    offset?: number
+  ): Promise<{ data: Notification[]; total: number; limit: number; offset: number }> {
     const actualLimit = limit ?? NOTIFICATIONS_CONSTANTS.DEFAULT_LIMIT;
     const maxLimit = Math.min(actualLimit, NOTIFICATIONS_CONSTANTS.MAX_LIMIT);
-    
-    return this.notificationRepository.find({
+    const actualOffset = offset ?? 0;
+
+    const [data, total] = await this.notificationRepository.findAndCount({
       where: { userId },
       order: { createdAt: 'DESC' },
       take: maxLimit,
+      skip: actualOffset,
     });
+    
+    return {
+      data,
+      total,
+      limit: maxLimit,
+      offset: actualOffset,
+    };
   }
 
   async markAsRead(id: string, userId: string): Promise<Notification> {
@@ -63,6 +100,19 @@ export class NotificationsService {
 
   async delete(id: string, userId: string): Promise<void> {
     await this.notificationRepository.delete({ id, userId });
+  }
+
+  async cleanOldNotifications(): Promise<void> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - NOTIFICATIONS_CONSTANTS.RETENTION_DAYS);
+
+    const result = await this.notificationRepository.delete({
+      createdAt: LessThan(cutoffDate),
+    });
+
+    if (result.affected && result.affected > 0) {
+      this.logger.log(`🧹 Cleaned ${result.affected} old notifications (older than ${NOTIFICATIONS_CONSTANTS.RETENTION_DAYS} days)`);
+    }
   }
 }
 

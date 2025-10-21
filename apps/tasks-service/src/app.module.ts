@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { HealthModule } from './modules/health/health.module';
+import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { Task, Comment, TaskAssignment, TaskHistory } from './entities';
 import { getDatabaseSynchronizeOption } from './config/database.config';
 
@@ -17,8 +19,15 @@ import { getDatabaseSynchronizeOption } from './config/database.config';
       entities: [Task, Comment, TaskAssignment, TaskHistory],
       synchronize: getDatabaseSynchronizeOption(),
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 50,
+      },
+    ]),
     TasksModule,
     HealthModule,
+    SchedulerModule,
   ],
   controllers: [],
   providers: [],

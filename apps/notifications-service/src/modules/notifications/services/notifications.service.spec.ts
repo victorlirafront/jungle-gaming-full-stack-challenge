@@ -8,6 +8,7 @@ const mockNotificationRepository = {
   save: jest.fn(),
   find: jest.fn(),
   findOne: jest.fn(),
+  findAndCount: jest.fn(),
   update: jest.fn(),
   delete: jest.fn(),
   count: jest.fn(),
@@ -71,46 +72,80 @@ describe('NotificationsService', () => {
   describe('findAllByUser', () => {
     const userId = 'user-123';
 
-    it('should return user notifications ordered by date with default limit', async () => {
+    it('should return user notifications ordered by date with default limit and offset', async () => {
       const mockNotifications = [
         createMockNotification({ id: 'notif-1', userId }),
         createMockNotification({ id: 'notif-2', userId }),
       ];
 
-      notificationRepository.find.mockResolvedValue(mockNotifications);
+      notificationRepository.findAndCount.mockResolvedValue([mockNotifications, 2]);
 
       const result = await service.findAllByUser(userId);
 
-      expect(notificationRepository.find).toHaveBeenCalledWith({
+      expect(notificationRepository.findAndCount).toHaveBeenCalledWith({
         where: { userId },
         order: { createdAt: 'DESC' },
         take: 50,
+        skip: 0,
       });
-      expect(result).toEqual(mockNotifications);
+      expect(result).toEqual({
+        data: mockNotifications,
+        total: 2,
+        limit: 50,
+        offset: 0,
+      });
     });
 
-    it('should apply custom limit when provided', async () => {
+    it('should apply custom limit and offset when provided', async () => {
       const mockNotifications = [createMockNotification({ userId })];
       const customLimit = 10;
+      const customOffset = 20;
 
-      notificationRepository.find.mockResolvedValue(mockNotifications);
+      notificationRepository.findAndCount.mockResolvedValue([mockNotifications, 25]);
 
-      const result = await service.findAllByUser(userId, customLimit);
+      const result = await service.findAllByUser(userId, customLimit, customOffset);
 
-      expect(notificationRepository.find).toHaveBeenCalledWith({
+      expect(notificationRepository.findAndCount).toHaveBeenCalledWith({
         where: { userId },
         order: { createdAt: 'DESC' },
         take: customLimit,
+        skip: customOffset,
       });
-      expect(result).toEqual(mockNotifications);
+      expect(result).toEqual({
+        data: mockNotifications,
+        total: 25,
+        limit: customLimit,
+        offset: customOffset,
+      });
     });
 
-    it('should return empty array when user has no notifications', async () => {
-      notificationRepository.find.mockResolvedValue([]);
+    it('should enforce max limit when provided limit exceeds it', async () => {
+      const mockNotifications = [createMockNotification({ userId })];
+
+      notificationRepository.findAndCount.mockResolvedValue([mockNotifications, 1]);
+
+      const result = await service.findAllByUser(userId, 200);
+
+      expect(notificationRepository.findAndCount).toHaveBeenCalledWith({
+        where: { userId },
+        order: { createdAt: 'DESC' },
+        take: 100,
+        skip: 0,
+      });
+      expect(result.limit).toBe(100);
+    });
+
+    it('should return empty data array when user has no notifications', async () => {
+      notificationRepository.findAndCount.mockResolvedValue([[], 0]);
 
       const result = await service.findAllByUser(userId);
 
-      expect(result).toEqual([]);
+      expect(result).toEqual({
+        data: [],
+        total: 0,
+        limit: 50,
+        offset: 0,
+      });
     });
   });
 

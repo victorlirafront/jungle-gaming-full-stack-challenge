@@ -140,6 +140,7 @@ packages/
 - Essential para real-time e UX moderna
 
 ## 📌 3. Problemas Conhecidos e Melhorias
+  - Tokens em localStorage ( Migrar para cookies HTTP-Only com flags `Secure` e `SameSite=Strict` )
 
 ## 📌 4. Tempo Gasto
 
