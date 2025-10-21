@@ -20,17 +20,17 @@ export class Comment {
   @Column('text')
   content: string;
 
-  @Column('uuid')
+  @Column({ name: 'author_id', type: 'uuid' })
   authorId: string;
 
-  @Column('uuid')
+  @Column({ name: 'task_id', type: 'uuid' })
   taskId: string;
 
   @ManyToOne(() => Task, (task) => task.comments, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'taskId' })
+  @JoinColumn({ name: 'task_id' })
   task: Task;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }
 

@@ -25,7 +25,7 @@ export class Notification {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column('uuid')
+  @Column({ name: 'user_id', type: 'uuid' })
   userId!: string;
 
   @Column({
@@ -40,16 +40,16 @@ export class Notification {
   @Column('text')
   message!: string;
 
-  @Column('json', { nullable: true })
+  @Column('jsonb', { nullable: true })
   data!: Record<string, unknown>;
 
   @Column({ default: false })
   read!: boolean;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
 }
 

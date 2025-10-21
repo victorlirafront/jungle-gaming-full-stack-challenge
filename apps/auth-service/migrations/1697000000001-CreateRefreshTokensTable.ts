@@ -60,9 +60,17 @@ export class CreateRefreshTokensTable1697000000001 implements MigrationInterface
     await queryRunner.query(
       'CREATE INDEX idx_refresh_tokens_token ON refresh_tokens(token)',
     );
+    await queryRunner.query(
+      'CREATE INDEX idx_refresh_tokens_expires_at ON refresh_tokens(expires_at)',
+    );
+    await queryRunner.query(
+      'CREATE INDEX idx_refresh_tokens_user_id_revoked ON refresh_tokens(user_id, revoked)',
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query('DROP INDEX IF EXISTS idx_refresh_tokens_user_id_revoked');
+    await queryRunner.query('DROP INDEX IF EXISTS idx_refresh_tokens_expires_at');
     await queryRunner.query('DROP INDEX IF EXISTS idx_refresh_tokens_token');
     await queryRunner.query('DROP INDEX IF EXISTS idx_refresh_tokens_user_id');
 

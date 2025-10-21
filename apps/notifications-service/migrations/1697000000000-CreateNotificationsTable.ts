@@ -3,7 +3,7 @@ import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 export class CreateNotificationsTable1697000000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
-    
+
     await queryRunner.query(`
       CREATE TYPE notification_type AS ENUM (
         'TASK_CREATED',
@@ -27,7 +27,7 @@ export class CreateNotificationsTable1697000000000 implements MigrationInterface
             default: 'uuid_generate_v4()',
           },
           {
-            name: 'userId',
+            name: 'user_id',
             type: 'uuid',
           },
           {
@@ -54,12 +54,12 @@ export class CreateNotificationsTable1697000000000 implements MigrationInterface
             default: false,
           },
           {
-            name: 'createdAt',
+            name: 'created_at',
             type: 'timestamp',
             default: 'now()',
           },
           {
-            name: 'updatedAt',
+            name: 'updated_at',
             type: 'timestamp',
             default: 'now()',
           },
@@ -69,13 +69,18 @@ export class CreateNotificationsTable1697000000000 implements MigrationInterface
     );
 
     await queryRunner.query(`
-      CREATE INDEX idx_notifications_userId ON notifications(userId);
-      CREATE INDEX idx_notifications_read ON notifications(read);
-      CREATE INDEX idx_notifications_createdAt ON notifications(createdAt DESC);
+      CREATE INDEX idx_notifications_user_id ON notifications(user_id);
+      CREATE INDEX idx_notifications_user_id_read ON notifications(user_id, read);
+      CREATE INDEX idx_notifications_user_id_created_at ON notifications(user_id, created_at);
+      CREATE INDEX idx_notifications_created_at ON notifications(created_at DESC);
     `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_notifications_created_at;`);
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_notifications_user_id_created_at;`);
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_notifications_user_id_read;`);
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_notifications_user_id;`);
     await queryRunner.dropTable('notifications');
     await queryRunner.query(`DROP TYPE notification_type;`);
   }

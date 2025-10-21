@@ -14,19 +14,19 @@ export class CreateTaskAssignmentsTable1697000000001 implements MigrationInterfa
             default: 'uuid_generate_v4()',
           },
           {
-            name: 'taskId',
+            name: 'task_id',
             type: 'uuid',
           },
           {
-            name: 'userId',
+            name: 'user_id',
             type: 'uuid',
           },
           {
-            name: 'assignedBy',
+            name: 'assigned_by',
             type: 'uuid',
           },
           {
-            name: 'assignedAt',
+            name: 'assigned_at',
             type: 'timestamp',
             default: 'now()',
           },
@@ -38,15 +38,24 @@ export class CreateTaskAssignmentsTable1697000000001 implements MigrationInterfa
     await queryRunner.createForeignKey(
       'task_assignments',
       new TableForeignKey({
-        columnNames: ['taskId'],
+        columnNames: ['task_id'],
         referencedColumnNames: ['id'],
         referencedTableName: 'tasks',
         onDelete: 'CASCADE',
       })
     );
+
+    await queryRunner.query(`
+      CREATE INDEX idx_task_assignments_task_id ON task_assignments(task_id);
+      CREATE INDEX idx_task_assignments_user_id ON task_assignments(user_id);
+      CREATE INDEX idx_task_assignments_task_id_user_id ON task_assignments(task_id, user_id);
+    `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_task_assignments_task_id_user_id;`);
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_task_assignments_user_id;`);
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_task_assignments_task_id;`);
     await queryRunner.dropTable('task_assignments');
   }
 }
