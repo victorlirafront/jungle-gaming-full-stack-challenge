@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { HealthModule } from './modules/health/health.module';
+import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { Task, Comment, TaskAssignment, TaskHistory } from './entities';
 import { getDatabaseSynchronizeOption } from './config/database.config';
 
@@ -26,6 +27,7 @@ import { getDatabaseSynchronizeOption } from './config/database.config';
     ]),
     TasksModule,
     HealthModule,
+    SchedulerModule,
   ],
   controllers: [],
   providers: [],

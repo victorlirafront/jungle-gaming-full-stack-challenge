@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException, ForbiddenException, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Inject, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, LessThan } from 'typeorm';
 import { ClientProxy } from '@nestjs/microservices';
 import { Task, Comment, TaskAssignment, TaskHistory } from '../../../entities';
 import {
@@ -15,6 +15,8 @@ import { PAGINATION_CONSTANTS } from '../../../common/constants';
 
 @Injectable()
 export class TasksService {
+  private readonly logger = new Logger(TasksService.name);
+
   constructor(
     @InjectRepository(Task)
     private taskRepository: Repository<Task>,
@@ -308,6 +310,19 @@ export class TasksService {
     const [data, total] = await query.getManyAndCount();
 
     return { data, total };
+  }
+
+  async cleanOldHistory(): Promise<void> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - PAGINATION_CONSTANTS.HISTORY_RETENTION_DAYS);
+
+    const result = await this.historyRepository.delete({
+      createdAt: LessThan(cutoffDate),
+    });
+
+    if (result.affected && result.affected > 0) {
+      this.logger.log(`🧹 Cleaned ${result.affected} old task history records (older than ${PAGINATION_CONSTANTS.HISTORY_RETENTION_DAYS} days)`);
+    }
   }
 }
 
