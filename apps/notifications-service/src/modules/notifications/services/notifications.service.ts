@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan } from 'typeorm';
+import { Repository, LessThan, MoreThan } from 'typeorm';
 import { Notification, NotificationType } from '../../../entities/notification.entity';
 import { NOTIFICATIONS_CONSTANTS } from '../../../common';
 
@@ -22,8 +22,30 @@ export class NotificationsService {
   ) {}
 
   async create(dto: CreateNotificationDto): Promise<Notification> {
+    await this.checkSpamProtection(dto.userId);
+
     const notification = this.notificationRepository.create(dto);
-    return this.notificationRepository.save(notification);
+    const saved = await this.notificationRepository.save(notification);
+    
+    this.logger.log(`📬 Notification created for user ${dto.userId}: ${dto.type}`);
+    
+    return saved;
+  }
+
+  private async checkSpamProtection(userId: string): Promise<void> {
+    const oneMinuteAgo = new Date(Date.now() - NOTIFICATIONS_CONSTANTS.RATE_LIMIT.CREATE.TTL);
+    
+    const recentCount = await this.notificationRepository.count({
+      where: {
+        userId,
+        createdAt: MoreThan(oneMinuteAgo),
+      },
+    });
+
+    if (recentCount >= NOTIFICATIONS_CONSTANTS.RATE_LIMIT.CREATE.LIMIT) {
+      this.logger.warn(`⚠️  Spam protection triggered for user ${userId}: ${recentCount} notifications in last minute`);
+      throw new BadRequestException('Too many notifications created. Please try again later.');
+    }
   }
 
   async findAllByUser(userId: string, limit?: number): Promise<Notification[]> {

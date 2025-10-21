@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { HealthModule } from './modules/health/health.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
@@ -17,6 +18,12 @@ import { getDatabaseSynchronizeOption } from './config/database.config';
       autoLoadEntities: true,
       synchronize: getDatabaseSynchronizeOption(),
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 30,
+      },
+    ]),
     NotificationsModule,
     HealthModule,
     SchedulerModule,
