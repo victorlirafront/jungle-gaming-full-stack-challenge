@@ -101,7 +101,6 @@ packages/
 
 **TypeORM com Migrations**
 - Controle de versão do banco, seguro para produção
-- `synchronize: true` em dev, migrations em prod
 - Rollback disponível para reversão
 
 **JWT com Refresh Tokens**
