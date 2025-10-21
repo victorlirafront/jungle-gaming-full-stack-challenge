@@ -97,8 +97,8 @@ export class TasksService {
       });
     }
 
-    const limit = filterDto.limit || 50;
-    const offset = filterDto.offset || 0;
+    const limit = filterDto.limit || PAGINATION_CONSTANTS.TASKS_DEFAULT_LIMIT;
+    const offset = filterDto.offset || PAGINATION_CONSTANTS.DEFAULT_OFFSET;
 
     query.take(limit).skip(offset);
     query.orderBy('task.createdAt', 'DESC');
