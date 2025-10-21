@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 
 export enum NotificationType {
@@ -16,6 +17,10 @@ export enum NotificationType {
 }
 
 @Entity('notifications')
+@Index(['userId'])
+@Index(['userId', 'read'])
+@Index(['userId', 'createdAt'])
+@Index(['createdAt'])
 export class Notification {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
