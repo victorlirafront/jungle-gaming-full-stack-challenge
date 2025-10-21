@@ -174,7 +174,7 @@ packages/
 ### Dia 10-12: Extras
 - Features extras
 
-### Dia 10-14: Refatoração
+### Dia 13-14: Refatoração
 - Refatoração e otimizações
 - Documentação (README)
 - Testes finais
