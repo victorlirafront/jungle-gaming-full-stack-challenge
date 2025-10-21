@@ -27,7 +27,7 @@ export class HttpClient {
 
   private async validateAndRefreshToken(): Promise<void> {
     const accessToken = localStorage.getItem('accessToken');
-    
+
     if (!accessToken) {
       return;
     }
@@ -77,7 +77,7 @@ export class HttpClient {
     init?: RequestInit & { params?: Record<string, string | string[]> },
   ): Promise<T> {
     await this.validateAndRefreshToken();
-    
+
     const url = this.buildUrl(path, init?.params);
     const makeRequest = () => fetch(url, {
       method: 'GET',
@@ -90,14 +90,14 @@ export class HttpClient {
   }
 
   async post<T>(path: string, body?: unknown, init?: RequestInit): Promise<T> {
-    const isAuthEndpoint = path.includes('/auth/login') || 
-                          path.includes('/auth/register') || 
+    const isAuthEndpoint = path.includes('/auth/login') ||
+                          path.includes('/auth/register') ||
                           path.includes('/auth/refresh');
-    
+
     if (!isAuthEndpoint) {
       await this.validateAndRefreshToken();
     }
-    
+
     const makeRequest = () => fetch(this.url(path), {
       method: 'POST',
       headers: this.getHeaders(init, true),
@@ -111,7 +111,7 @@ export class HttpClient {
 
   async put<T>(path: string, body?: unknown, init?: RequestInit): Promise<T> {
     await this.validateAndRefreshToken();
-    
+
     const makeRequest = () => fetch(this.url(path), {
       method: 'PUT',
       headers: this.getHeaders(init, true),
@@ -125,7 +125,7 @@ export class HttpClient {
 
   async delete<T>(path: string, init?: RequestInit): Promise<T> {
     await this.validateAndRefreshToken();
-    
+
     const makeRequest = () => fetch(this.url(path), {
       method: 'DELETE',
       headers: this.getHeaders(init),
