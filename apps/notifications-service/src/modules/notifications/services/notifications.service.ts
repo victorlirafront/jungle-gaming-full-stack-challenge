@@ -48,15 +48,28 @@ export class NotificationsService {
     }
   }
 
-  async findAllByUser(userId: string, limit?: number): Promise<Notification[]> {
+  async findAllByUser(
+    userId: string, 
+    limit?: number, 
+    offset?: number
+  ): Promise<{ data: Notification[]; total: number; limit: number; offset: number }> {
     const actualLimit = limit ?? NOTIFICATIONS_CONSTANTS.DEFAULT_LIMIT;
     const maxLimit = Math.min(actualLimit, NOTIFICATIONS_CONSTANTS.MAX_LIMIT);
+    const actualOffset = offset ?? 0;
 
-    return this.notificationRepository.find({
+    const [data, total] = await this.notificationRepository.findAndCount({
       where: { userId },
       order: { createdAt: 'DESC' },
       take: maxLimit,
+      skip: actualOffset,
     });
+    
+    return {
+      data,
+      total,
+      limit: maxLimit,
+      offset: actualOffset,
+    };
   }
 
   async markAsRead(id: string, userId: string): Promise<Notification> {
