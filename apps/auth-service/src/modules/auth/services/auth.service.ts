@@ -57,9 +57,11 @@ export class AuthService {
   async login(loginDto: LoginDto): Promise<AuthResponse> {
     const { emailOrUsername, password } = loginDto;
 
-    const user = await this.userRepository.findOne({
-      where: [{ email: emailOrUsername }, { username: emailOrUsername }],
-    });
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .where('user.email = :emailOrUsername OR user.username = :emailOrUsername', { emailOrUsername })
+      .addSelect('user.password')
+      .getOne();
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -192,7 +194,11 @@ export class AuthService {
   }
 
   async changePassword(userId: string, changePasswordDto: ChangePasswordDto): Promise<{ message: string }> {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .where('user.id = :userId', { userId })
+      .addSelect('user.password')
+      .getOne();
 
     if (!user) {
       throw new NotFoundException('User not found');

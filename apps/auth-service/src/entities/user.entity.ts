@@ -19,7 +19,7 @@ export class User {
   @Column({ unique: true, length: 50 })
   username!: string;
 
-  @Column({ length: 255 })
+  @Column({ length: 255, select: false })
   password!: string;
 
   @Column({ nullable: true, length: 255 })
