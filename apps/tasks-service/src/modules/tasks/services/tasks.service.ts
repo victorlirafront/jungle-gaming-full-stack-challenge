@@ -97,7 +97,8 @@ export class TasksService {
       });
     }
 
-    const limit = filterDto.limit || PAGINATION_CONSTANTS.TASKS_DEFAULT_LIMIT;
+    const actualLimit = filterDto.limit || PAGINATION_CONSTANTS.TASKS_DEFAULT_LIMIT;
+    const limit = Math.min(actualLimit, PAGINATION_CONSTANTS.MAX_LIMIT);
     const offset = filterDto.offset || PAGINATION_CONSTANTS.DEFAULT_OFFSET;
 
     query.take(limit).skip(offset);
@@ -276,7 +277,8 @@ export class TasksService {
       .where('comment.taskId = :taskId', { taskId })
       .orderBy('comment.createdAt', 'DESC');
 
-    const limit = getCommentsDto.limit || PAGINATION_CONSTANTS.DEFAULT_LIMIT;
+    const actualLimit = getCommentsDto.limit || PAGINATION_CONSTANTS.DEFAULT_LIMIT;
+    const limit = Math.min(actualLimit, PAGINATION_CONSTANTS.MAX_LIMIT);
     const offset = getCommentsDto.offset || PAGINATION_CONSTANTS.DEFAULT_OFFSET;
 
     query.take(limit).skip(offset);
@@ -297,7 +299,8 @@ export class TasksService {
       .where('history.taskId = :taskId', { taskId })
       .orderBy('history.createdAt', 'DESC');
 
-    const limit = getHistoryDto.limit || PAGINATION_CONSTANTS.DEFAULT_LIMIT;
+    const actualLimit = getHistoryDto.limit || PAGINATION_CONSTANTS.DEFAULT_LIMIT;
+    const limit = Math.min(actualLimit, PAGINATION_CONSTANTS.MAX_LIMIT);
     const offset = getHistoryDto.offset || PAGINATION_CONSTANTS.DEFAULT_OFFSET;
 
     query.take(limit).skip(offset);
