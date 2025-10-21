@@ -3,7 +3,11 @@ import { ClientProxy } from '@nestjs/microservices';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { firstValueFrom } from 'rxjs';
 import { RegisterDto, LoginDto, RefreshTokenDto, UpdateProfileDto, ChangePasswordDto } from '../dto';
-import { JwtAuthGuard } from '../../../common';
+import { JwtAuthGuard, JwtPayload } from '../../../common';
+
+interface RequestWithUser {
+  user: JwtPayload;
+}
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -49,7 +53,7 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'Profile retrieved successfully' })
-  async getProfile(@Request() req: any) {
+  async getProfile(@Request() req: RequestWithUser) {
     return firstValueFrom(this.authClient.send({ cmd: 'get-profile' }, req.user.sub));
   }
 
@@ -58,7 +62,7 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update current user profile' })
   @ApiResponse({ status: 200, description: 'Profile updated successfully' })
-  async updateProfile(@Request() req: any, @Body() dto: UpdateProfileDto) {
+  async updateProfile(@Request() req: RequestWithUser, @Body() dto: UpdateProfileDto) {
     return firstValueFrom(this.authClient.send({ cmd: 'update-profile' }, { userId: req.user.sub, data: dto }));
   }
 
@@ -68,7 +72,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Change password (authenticated users)' })
   @ApiResponse({ status: 200, description: 'Password changed successfully' })
   @ApiResponse({ status: 401, description: 'Current password is incorrect' })
-  async changePassword(@Request() req: any, @Body() dto: ChangePasswordDto) {
+  async changePassword(@Request() req: RequestWithUser, @Body() dto: ChangePasswordDto) {
     return firstValueFrom(this.authClient.send({ cmd: 'change-password' }, { userId: req.user.sub, data: dto }));
   }
 }

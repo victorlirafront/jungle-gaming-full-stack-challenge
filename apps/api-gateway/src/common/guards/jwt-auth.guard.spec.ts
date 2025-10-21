@@ -8,8 +8,13 @@ const mockJwtService = {
   verifyAsync: jest.fn(),
 };
 
-const createMockExecutionContext = (headers: Record<string, string> = {}): { context: ExecutionContext; request: any } => {
-  const request = {
+interface MockRequest {
+  headers: Record<string, string>;
+  user?: JwtPayload;
+}
+
+const createMockExecutionContext = (headers: Record<string, string> = {}): { context: ExecutionContext; request: MockRequest } => {
+  const request: MockRequest = {
     headers,
     user: undefined,
   };
