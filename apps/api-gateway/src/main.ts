@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Transport, MicroserviceOptions } from '@nestjs/microservices';
 import { AppModule } from './app.module';
@@ -7,6 +7,7 @@ import { ConfigService } from './config';
 import { RpcExceptionFilter } from './common';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
@@ -51,8 +52,8 @@ async function bootstrap() {
   const { port } = configService.appConfig;
   await app.listen(port, '0.0.0.0');
 
-  console.log(`🚀 API Gateway running on http://0.0.0.0:${port}`);
-  console.log(`📚 Swagger docs available at http://localhost:${port}/${swaggerConfig.path}`);
+  logger.log(`🚀 API Gateway running on http://0.0.0.0:${port}`);
+  logger.log(`📚 Swagger docs available at http://localhost:${port}/${swaggerConfig.path}`);
 }
 
 bootstrap();
