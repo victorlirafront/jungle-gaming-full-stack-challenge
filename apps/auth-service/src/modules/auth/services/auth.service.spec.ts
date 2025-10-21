@@ -122,12 +122,12 @@ describe('AuthService', () => {
       });
     });
 
-    it('should throw ConflictException when email already exists', async () => {
+    it('should throw ConflictException when Email já está em uso', async () => {
       const existingUser = createMockUser({ email: registerDto.email });
 
       userRepository.findOne.mockResolvedValue(existingUser);
 
-      await expect(service.register(registerDto)).rejects.toThrow('Email already exists');
+      await expect(service.register(registerDto)).rejects.toThrow('Email já está em uso');
 
       expect(bcrypt.hash).not.toHaveBeenCalled();
       expect(userRepository.create).not.toHaveBeenCalled();
@@ -141,7 +141,7 @@ describe('AuthService', () => {
 
       userRepository.findOne.mockResolvedValue(existingUser);
 
-      await expect(service.register(registerDto)).rejects.toThrow('Username already exists');
+      await expect(service.register(registerDto)).rejects.toThrow('O nome de usuário já existe');
 
       expect(bcrypt.hash).not.toHaveBeenCalled();
       expect(userRepository.create).not.toHaveBeenCalled();
@@ -281,7 +281,7 @@ describe('AuthService', () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
       await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
-      await expect(service.login(loginDto)).rejects.toThrow('User account is inactive');
+      await expect(service.login(loginDto)).rejects.toThrow('Conta de usuário inativa');
 
       expect(jwtService.signAsync).not.toHaveBeenCalled();
     });
@@ -336,7 +336,7 @@ describe('AuthService', () => {
       refreshTokenRepository.findOne.mockResolvedValue(null);
 
       await expect(service.refreshTokens(refreshTokenDto)).rejects.toThrow(UnauthorizedException);
-      await expect(service.refreshTokens(refreshTokenDto)).rejects.toThrow('Invalid refresh token');
+      await expect(service.refreshTokens(refreshTokenDto)).rejects.toThrow('Token de atualização inválido');
 
       expect(jwtService.signAsync).not.toHaveBeenCalled();
     });
@@ -356,7 +356,7 @@ describe('AuthService', () => {
       refreshTokenRepository.findOne.mockResolvedValue(mockStoredToken);
 
       await expect(service.refreshTokens(refreshTokenDto)).rejects.toThrow(UnauthorizedException);
-      await expect(service.refreshTokens(refreshTokenDto)).rejects.toThrow('Refresh token has been revoked');
+      await expect(service.refreshTokens(refreshTokenDto)).rejects.toThrow('Token de atualização foi revogado');
 
       expect(jwtService.signAsync).not.toHaveBeenCalled();
     });
@@ -376,7 +376,7 @@ describe('AuthService', () => {
       refreshTokenRepository.findOne.mockResolvedValue(mockStoredToken);
 
       await expect(service.refreshTokens(refreshTokenDto)).rejects.toThrow(UnauthorizedException);
-      await expect(service.refreshTokens(refreshTokenDto)).rejects.toThrow('Refresh token has expired');
+      await expect(service.refreshTokens(refreshTokenDto)).rejects.toThrow('Token de atualização expirou');
 
       expect(jwtService.signAsync).not.toHaveBeenCalled();
     });
@@ -410,7 +410,7 @@ describe('AuthService', () => {
       expect(bcrypt.hash).toHaveBeenCalledWith(changePasswordDto.newPassword, AUTH_CONSTANTS.BCRYPT_SALT_ROUNDS);
       expect(userRepository.save).toHaveBeenCalled();
       expect(refreshTokenRepository.delete).toHaveBeenCalledWith({ userId });
-      expect(result).toEqual({ message: 'Password changed successfully' });
+      expect(result).toEqual({ message: 'Senha alterada com sucesso' });
     });
 
     it('should throw NotFoundException when user does not exist', async () => {
@@ -418,7 +418,7 @@ describe('AuthService', () => {
       mockQueryBuilder.getOne.mockResolvedValue(null);
       mockUserRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
 
-      await expect(service.changePassword(userId, changePasswordDto)).rejects.toThrow('User not found');
+      await expect(service.changePassword(userId, changePasswordDto)).rejects.toThrow('Usuário não encontrado');
 
       expect(bcrypt.compare).not.toHaveBeenCalled();
       expect(userRepository.save).not.toHaveBeenCalled();
@@ -434,7 +434,7 @@ describe('AuthService', () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       await expect(service.changePassword(userId, changePasswordDto)).rejects.toThrow(UnauthorizedException);
-      await expect(service.changePassword(userId, changePasswordDto)).rejects.toThrow('Current password is incorrect');
+      await expect(service.changePassword(userId, changePasswordDto)).rejects.toThrow('Senha atual incorreta');
 
       expect(bcrypt.hash).not.toHaveBeenCalled();
       expect(userRepository.save).not.toHaveBeenCalled();
@@ -475,7 +475,7 @@ describe('AuthService', () => {
     it('should throw NotFoundException when user does not exist', async () => {
       userRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.validateUser(userId)).rejects.toThrow('User not found');
+      await expect(service.validateUser(userId)).rejects.toThrow('Usuário não encontrado');
     });
 
     it('should throw UnauthorizedException when user account is inactive', async () => {
@@ -484,7 +484,7 @@ describe('AuthService', () => {
       userRepository.findOne.mockResolvedValue(mockUser);
 
       await expect(service.validateUser(userId)).rejects.toThrow(UnauthorizedException);
-      await expect(service.validateUser(userId)).rejects.toThrow('User account is inactive');
+      await expect(service.validateUser(userId)).rejects.toThrow('Conta de usuário inativa');
     });
   });
 });
