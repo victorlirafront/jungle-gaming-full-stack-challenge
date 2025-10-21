@@ -31,14 +31,14 @@ export function TaskCard({ task, onView, onEdit, onDelete }: TaskCardProps) {
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader>
+        <div className="flex gap-2 justify-end">
+            <Badge className={priorityColors[task.priority]}>{task.priority}</Badge>
+            <Badge className={statusColors[task.status]}>{task.status}</Badge>
+        </div>
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <CardTitle className="text-lg">{task.title}</CardTitle>
             <CardDescription className="mt-1">{task.description}</CardDescription>
-          </div>
-          <div className="flex gap-2">
-            <Badge className={priorityColors[task.priority]}>{task.priority}</Badge>
-            <Badge className={statusColors[task.status]}>{task.status}</Badge>
           </div>
         </div>
       </CardHeader>

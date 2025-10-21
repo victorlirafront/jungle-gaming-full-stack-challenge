@@ -7,6 +7,9 @@
 
 Sistema de gestão de tarefas colaborativo com microserviços, notificações em tempo real e arquitetura event-driven.
 
+## 📌 Video Demonstrativo
+<video style="max-width: 800px; width: 100%;" src="https://img.wine.com.br/testes/2022/27-12/Grava%C3%A7%C3%A3o%20de%20Tela%202025-10-21%20%C3%A0s%2018.44.14.mov" controls></video>
+
 ## 📌 Início Rápido
 
 **Pré-requisitos:** 
