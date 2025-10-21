@@ -29,7 +29,7 @@ export class NotificationsService {
   async findAllByUser(userId: string, limit?: number): Promise<Notification[]> {
     const actualLimit = limit ?? NOTIFICATIONS_CONSTANTS.DEFAULT_LIMIT;
     const maxLimit = Math.min(actualLimit, NOTIFICATIONS_CONSTANTS.MAX_LIMIT);
-    
+
     return this.notificationRepository.find({
       where: { userId },
       order: { createdAt: 'DESC' },
