@@ -10,7 +10,7 @@ Sistema de gestão de tarefas colaborativo com microserviços, notificações em
 ## 📌 Início Rápido
 
 **Pré-requisitos:** 
-- Node.js >= 18.0.0
+- Node version: 22.17.1
 - Docker
 - Yarn
 
