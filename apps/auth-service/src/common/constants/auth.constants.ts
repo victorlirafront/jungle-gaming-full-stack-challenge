@@ -5,8 +5,10 @@ export const AUTH_CONSTANTS = {
 
   BCRYPT_SALT_ROUNDS: 10,
 
-  DEFAULT_JWT_SECRET: 'your-secret-key',
-  DEFAULT_JWT_REFRESH_SECRET: 'your-refresh-secret-key',
+  // ⚠️ SECURITY WARNING: These are DEVELOPMENT ONLY defaults
+  // MUST be overridden with strong secrets via environment variables in production
+  DEFAULT_JWT_SECRET: 'dev-secret-key-CHANGE-IN-PRODUCTION',
+  DEFAULT_JWT_REFRESH_SECRET: 'dev-refresh-secret-key-CHANGE-IN-PRODUCTION',
   DEFAULT_RABBITMQ_URL: 'amqp://admin:admin@rabbitmq:5672',
 
   AUTH_QUEUE: 'auth_queue',

@@ -1,16 +1,22 @@
-import { Injectable } from '@nestjs/common';
-import { AUTH_CONSTANTS } from '../common';
+import { Injectable, Logger } from '@nestjs/common';
+import { AUTH_CONSTANTS, APP_CONSTANTS } from '../common';
 
 @Injectable()
 export class ConfigService {
+  private readonly logger = new Logger(ConfigService.name);
+
+  constructor() {
+    this.validateProductionConfig();
+  }
+
   get dbConfig() {
     return {
       type: 'postgres' as const,
-      host: process.env.DB_HOST || 'db',
-      port: parseInt(process.env.DB_PORT || '5432'),
-      username: process.env.DB_USERNAME || 'postgres',
-      password: process.env.DB_PASSWORD || 'password',
-      database: process.env.DB_NAME || 'challenge_db',
+      host: process.env.DB_HOST || APP_CONSTANTS.DATABASE.DEFAULT_HOST,
+      port: parseInt(process.env.DB_PORT || String(APP_CONSTANTS.DATABASE.DEFAULT_PORT)),
+      username: process.env.DB_USERNAME || APP_CONSTANTS.DATABASE.DEFAULT_USERNAME,
+      password: process.env.DB_PASSWORD || APP_CONSTANTS.DATABASE.DEFAULT_PASSWORD,
+      database: process.env.DB_NAME || APP_CONSTANTS.DATABASE.DEFAULT_DATABASE,
       autoLoadEntities: true,
       synchronize: process.env.NODE_ENV === 'development',
     };
@@ -37,11 +43,37 @@ export class ConfigService {
 
   get appConfig() {
     return {
-      port: parseInt(process.env.PORT || '3002'),
+      port: parseInt(process.env.PORT || String(APP_CONSTANTS.DEFAULT_PORT)),
       nodeEnv: process.env.NODE_ENV || 'development',
       isDevelopment: process.env.NODE_ENV === 'development',
       isProduction: process.env.NODE_ENV === 'production',
     };
+  }
+
+  private validateProductionConfig(): void {
+    if (this.appConfig.isProduction) {
+      const issues: string[] = [];
+
+      if (!process.env.JWT_SECRET) {
+        issues.push('JWT_SECRET must be set in production');
+      }
+
+      if (!process.env.JWT_REFRESH_SECRET) {
+        issues.push('JWT_REFRESH_SECRET must be set in production');
+      }
+
+      if (!process.env.DB_PASSWORD || process.env.DB_PASSWORD === 'password') {
+        issues.push('DB_PASSWORD must be set with a strong password in production');
+      }
+
+      if (issues.length > 0) {
+        this.logger.error('🚨 SECURITY ISSUES DETECTED IN PRODUCTION:');
+        issues.forEach((issue) => this.logger.error(`   - ${issue}`));
+        throw new Error('Production configuration validation failed. Check logs above.');
+      }
+
+      this.logger.log('✅ Production configuration validated successfully');
+    }
   }
 }
 
