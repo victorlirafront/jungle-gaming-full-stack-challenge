@@ -4,7 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Transport, MicroserviceOptions } from '@nestjs/microservices';
 import { AppModule } from './app.module';
 import { ConfigService } from './config';
-import { RpcExceptionFilter } from './common';
+import { RpcExceptionFilter, APP_CONSTANTS } from './common';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -14,8 +14,8 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
-      urls: [process.env.RABBITMQ_URL || 'amqp://admin:admin@rabbitmq:5672'],
-      queue: 'gateway_queue',
+      urls: [process.env.RABBITMQ_URL || APP_CONSTANTS.RABBITMQ.DEFAULT_URL],
+      queue: APP_CONSTANTS.RABBITMQ.QUEUES.GATEWAY,
       queueOptions: {
         durable: true,
       },
