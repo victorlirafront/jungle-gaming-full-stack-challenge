@@ -1,5 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 import { logger } from '@/utils/logger';
+import { APP_CONSTANTS } from '@/constants/app.constants';
 
 export interface Notification {
   id: string;
@@ -30,8 +31,8 @@ export class WebSocketService {
     this.socket = io(wsUrl, {
       transports: ['websocket', 'polling'],
       reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionAttempts: 5,
+      reconnectionDelay: APP_CONSTANTS.WEBSOCKET.RECONNECTION_DELAY_MS,
+      reconnectionAttempts: APP_CONSTANTS.WEBSOCKET.RECONNECTION_ATTEMPTS,
     });
 
     this.socket.on('connect', () => {
@@ -68,7 +69,7 @@ export class WebSocketService {
     };
   }
 
-  async getNotifications(userId: string, limit = 50): Promise<Notification[]> {
+  async getNotifications(userId: string, limit = APP_CONSTANTS.PAGINATION.NOTIFICATIONS_DEFAULT_LIMIT): Promise<Notification[]> {
     return new Promise((resolve, reject) => {
       if (!this.socket) {
         reject(new Error('WebSocket not connected'));
