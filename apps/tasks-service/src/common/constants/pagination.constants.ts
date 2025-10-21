@@ -1,0 +1,6 @@
+export const PAGINATION_CONSTANTS = {
+  DEFAULT_LIMIT: 10,
+  DEFAULT_OFFSET: 0,
+  MAX_LIMIT: 100,
+} as const;
+

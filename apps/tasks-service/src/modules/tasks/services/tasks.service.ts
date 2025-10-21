@@ -11,6 +11,7 @@ import {
   GetCommentsDto,
   GetHistoryDto,
 } from '../dto';
+import { PAGINATION_CONSTANTS } from '../../../common/constants';
 
 @Injectable()
 export class TasksService {
@@ -275,8 +276,8 @@ export class TasksService {
       .where('comment.taskId = :taskId', { taskId })
       .orderBy('comment.createdAt', 'DESC');
 
-    const limit = getCommentsDto.limit || 10;
-    const offset = getCommentsDto.offset || 0;
+    const limit = getCommentsDto.limit || PAGINATION_CONSTANTS.DEFAULT_LIMIT;
+    const offset = getCommentsDto.offset || PAGINATION_CONSTANTS.DEFAULT_OFFSET;
 
     query.take(limit).skip(offset);
 
@@ -296,8 +297,8 @@ export class TasksService {
       .where('history.taskId = :taskId', { taskId })
       .orderBy('history.createdAt', 'DESC');
 
-    const limit = getHistoryDto.limit || 10;
-    const offset = getHistoryDto.offset || 0;
+    const limit = getHistoryDto.limit || PAGINATION_CONSTANTS.DEFAULT_LIMIT;
+    const offset = getHistoryDto.offset || PAGINATION_CONSTANTS.DEFAULT_OFFSET;
 
     query.take(limit).skip(offset);
 
