@@ -8,5 +8,20 @@ export const APP_CONSTANTS = {
     DEFAULT_PASSWORD: 'password',
     DEFAULT_DATABASE: 'challenge_db',
   },
+
+  RATE_LIMIT: {
+    LOGIN: {
+      TTL: 60000,
+      LIMIT: 5,
+    },
+    REGISTER: {
+      TTL: 3600000,
+      LIMIT: 3,
+    },
+    CHANGE_PASSWORD: {
+      TTL: 60000,
+      LIMIT: 3,
+    },
+  },
 } as const;
 
