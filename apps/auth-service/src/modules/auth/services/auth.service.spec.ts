@@ -250,7 +250,7 @@ describe('AuthService', () => {
       mockUserRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
 
       await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
-      await expect(service.login(loginDto)).rejects.toThrow('Invalid credentials');
+      await expect(service.login(loginDto)).rejects.toThrow('Usuário não encontrado');
 
       expect(bcrypt.compare).not.toHaveBeenCalled();
     });
@@ -265,7 +265,7 @@ describe('AuthService', () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
-      await expect(service.login(loginDto)).rejects.toThrow('Invalid credentials');
+      await expect(service.login(loginDto)).rejects.toThrow('Senha incorreta');
 
       expect(bcrypt.compare).toHaveBeenCalledWith(loginDto.password, mockUser.password);
       expect(jwtService.signAsync).not.toHaveBeenCalled();

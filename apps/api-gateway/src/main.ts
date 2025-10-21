@@ -4,7 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Transport, MicroserviceOptions } from '@nestjs/microservices';
 import { AppModule } from './app.module';
 import { ConfigService } from './config';
-import { RpcExceptionFilter, APP_CONSTANTS } from './common';
+import { APP_CONSTANTS } from './common';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -32,7 +32,6 @@ async function bootstrap() {
     })
   );
 
-  app.useGlobalFilters(new RpcExceptionFilter());
 
   app.enableCors(configService.corsConfig);
 

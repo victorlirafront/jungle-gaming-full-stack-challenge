@@ -14,9 +14,19 @@ export class RpcExceptionInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     return next.handle().pipe(
       catchError((error) => {
+        // Handle RPC errors from microservices
         if (error?.error) {
           const rpcError = error.error;
           const statusCode = this.getHttpStatus(rpcError.statusCode || rpcError.status);
+          const message = rpcError.message || 'Internal server error';
+
+          return throwError(() => new HttpException(message, statusCode));
+        }
+
+        // Handle RpcException with response structure
+        if (error?.response) {
+          const rpcError = error.response;
+          const statusCode = this.getHttpStatus(rpcError.statusCode || error.status);
           const message = rpcError.message || 'Internal server error';
 
           return throwError(() => new HttpException(message, statusCode));

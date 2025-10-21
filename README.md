@@ -30,6 +30,9 @@ docker-compose up -d
 # API Gateway: http://localhost:3001
 # Swagger Docs: http://localhost:3001/api/docs
 # RabbitMQ Admin: http://localhost:15672 (admin/admin)
+
+docker compose logs -f --tail=50
+# 5. Veja os logs dos serviços
 ```
 
 **Parar:** `docker-compose down`

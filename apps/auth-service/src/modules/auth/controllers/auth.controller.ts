@@ -32,7 +32,25 @@ export class AuthController {
 
   @MessagePattern({ cmd: 'login' })
   async login(@Payload() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+    try {
+      return await this.authService.login(loginDto);
+    } catch (error) {
+      const errorObj = error as {
+        message?: string;
+        name?: string;
+        status?: number;
+      };
+      throw new RpcException({
+        response: {
+          message: errorObj.message || 'Internal server error',
+          error: errorObj.name?.replace('Exception', '') || 'Error',
+          statusCode: errorObj.status || 500,
+        },
+        status: errorObj.status || 500,
+        message: errorObj.message || 'Internal server error',
+        name: errorObj.name,
+      });
+    }
   }
 
   @MessagePattern({ cmd: 'refresh' })

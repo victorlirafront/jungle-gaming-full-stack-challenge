@@ -64,13 +64,13 @@ export class AuthService {
       .getOne();
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Usuário não encontrado');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Senha incorreta');
     }
 
     if (!user.isActive) {
