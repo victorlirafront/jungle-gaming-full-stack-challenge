@@ -36,13 +36,13 @@ export class CreateUsersTable1697000000000 implements MigrationInterface {
             isNullable: false,
           },
           {
-            name: 'fullName',
+            name: 'full_name',
             type: 'varchar',
             length: '255',
             isNullable: true,
           },
           {
-            name: 'isActive',
+            name: 'is_active',
             type: 'boolean',
             default: true,
           },

@@ -22,10 +22,10 @@ export class User {
   @Column({ length: 255, select: false })
   password!: string;
 
-  @Column({ nullable: true, length: 255 })
+  @Column({ name: 'full_name', nullable: true, length: 255 })
   fullName?: string;
 
-  @Column({ default: true })
+  @Column({ name: 'is_active', default: true })
   isActive!: boolean;
 
   @CreateDateColumn({ name: 'created_at' })
