@@ -17,20 +17,20 @@ export class TaskAssignment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('uuid')
+  @Column({ name: 'task_id', type: 'uuid' })
   taskId: string;
 
-  @Column('uuid')
+  @Column({ name: 'user_id', type: 'uuid' })
   userId: string;
 
-  @Column('uuid')
+  @Column({ name: 'assigned_by', type: 'uuid' })
   assignedBy: string;
 
   @ManyToOne(() => Task, (task) => task.assignments, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'taskId' })
+  @JoinColumn({ name: 'task_id' })
   task: Task;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'assigned_at' })
   assignedAt: Date;
 }
 

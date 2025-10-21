@@ -42,10 +42,10 @@ export class Task {
   })
   priority: TaskPriority;
 
-  @Column('uuid')
+  @Column({ name: 'creator_id', type: 'uuid' })
   creatorId: string;
 
-  @Column('timestamp', { nullable: true })
+  @Column({ name: 'due_date', type: 'timestamp', nullable: true })
   dueDate: Date;
 
   @OneToMany(() => Comment, (comment) => comment.task, { cascade: true })
@@ -59,10 +59,10 @@ export class Task {
   @OneToMany(() => TaskHistory, (history) => history.task, { cascade: true })
   history: TaskHistory[];
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }
 

@@ -3,7 +3,7 @@ import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 export class CreateTasksTable1697000000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
-    
+
     await queryRunner.query(`
       CREATE TYPE task_status AS ENUM ('TODO', 'IN_PROGRESS', 'REVIEW', 'DONE');
       CREATE TYPE task_priority AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'URGENT');
@@ -41,21 +41,21 @@ export class CreateTasksTable1697000000000 implements MigrationInterface {
             default: "'MEDIUM'",
           },
           {
-            name: 'creatorId',
+            name: 'creator_id',
             type: 'uuid',
           },
           {
-            name: 'dueDate',
+            name: 'due_date',
             type: 'timestamp',
             isNullable: true,
           },
           {
-            name: 'createdAt',
+            name: 'created_at',
             type: 'timestamp',
             default: 'now()',
           },
           {
-            name: 'updatedAt',
+            name: 'updated_at',
             type: 'timestamp',
             default: 'now()',
           },
@@ -63,9 +63,22 @@ export class CreateTasksTable1697000000000 implements MigrationInterface {
       }),
       true
     );
+
+    await queryRunner.query(`
+      CREATE INDEX idx_tasks_creator_id ON tasks(creator_id);
+      CREATE INDEX idx_tasks_status ON tasks(status);
+      CREATE INDEX idx_tasks_priority ON tasks(priority);
+      CREATE INDEX idx_tasks_created_at ON tasks(created_at);
+      CREATE INDEX idx_tasks_creator_id_status ON tasks(creator_id, status);
+    `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_tasks_creator_id_status;`);
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_tasks_created_at;`);
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_tasks_priority;`);
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_tasks_status;`);
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_tasks_creator_id;`);
     await queryRunner.dropTable('tasks');
     await queryRunner.query(`
       DROP TYPE task_status;

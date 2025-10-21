@@ -17,10 +17,10 @@ export class TaskHistory {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('uuid')
+  @Column({ name: 'task_id', type: 'uuid' })
   taskId: string;
 
-  @Column('uuid')
+  @Column({ name: 'user_id', type: 'uuid' })
   userId: string;
 
   @Column({ length: 100 })
@@ -30,10 +30,10 @@ export class TaskHistory {
   details: string;
 
   @ManyToOne(() => Task, (task) => task.history, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'taskId' })
+  @JoinColumn({ name: 'task_id' })
   task: Task;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }
 
