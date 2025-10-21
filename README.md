@@ -34,6 +34,16 @@ docker-compose up -d
 
 **Parar:** `docker-compose down`
 
+## 🎯 Destaques Técnicos
+
+- **Arquitetura Microserviços:** Event-driven com RabbitMQ, escalável e resiliente
+- **Real-time:** WebSocket autenticado com notificações instantâneas
+- **Patterns Avançados:** Service Layer, Data Mapper, Custom Hooks, HTTP Client
+- **Type-Safety:** TypeScript end-to-end com types compartilhados no monorepo
+- **Developer Experience:** Hot reload, Swagger docs, health checks, migrations automáticas
+- **Qualidade:** CI/CD, testes unitários, validação em todas camadas
+- **Segurança:** JWT + Refresh Tokens, rate limiting, hash bcrypt, guards NestJS
+
 ## 📌 1. Arquitetura
 
 ### Diagrama de Componentes
@@ -90,56 +100,74 @@ packages/
 └── tsconfig/                 # Configuração TypeScript
 ```
 
-## 📌 2. Decisões Técnicas e Trade-offs
+## 📌 2. Decisões Técnicas
 
 ### Backend
 
 **Microserviços com RabbitMQ**
-- Desacoplamento, escalabilidade e resiliência
-- Comunicação assíncrona event-driven
-- Escolhido pela demonstração de arquitetura distribuída
+- Desacoplamento total entre serviços permite deploy e escalabilidade independente
+- Event-driven architecture facilita adicionar novos consumidores sem modificar produtores
+- Escolhido para demonstrar capacidade de lidar com sistemas complexos desde o início
 
 **TypeORM com Migrations**
-- Controle de versão do banco, seguro para produção
-- Rollback disponível para reversão
+- Migrations versionadas garantem consistência entre ambientes (dev/staging/prod)
+- Rollback automático em caso de falhas
+- Scripts de entrypoint executam migrations automaticamente no container
 
 **JWT com Refresh Tokens**
-- Stateless, revogação de tokens, segurança
-- Access token 15min, Refresh token 7 dias
-- Refresh automático transparente no frontend
+- Refresh token com rotação previne ataques de replay
+- Refresh automático transparente mantém sessão ativa sem interrupções
+- Blacklist de tokens revogados implementada no auth-service
 
 **Paginação Server-Side**
-- Performance otimizada com grandes volumes
-- Implementada em comentários e histórico
+- Offset/limit com contagem total para performance em grandes datasets
+- Implementada em tarefas, comentários e histórico
+- Evita carregar dados desnecessários no cliente
 
-## 📌 Frontend
+### Frontend
 
 **Service Layer Pattern**
-- Encapsula comunicação com API (`src/services/`)
-- Separação de concerns e reutilização
+- Encapsula toda comunicação com API em `src/services/`
+- Facilita testes mockando apenas o service layer
+- Mudanças na API requerem alterações apenas nos services
 
 **Data Mapper Pattern**
-- Transforma DTOs da API para modelos frontend (`src/mappers/`)
-- Desacoplamento entre backend e frontend
+- DTOs da API transformados em modelos tipados do frontend em `src/mappers/`
+- Backend pode mudar estrutura sem impactar componentes React
+- Adaptação de nomenclatura (backend usa snake_case em alguns lugares)
 
 **Custom Hooks Pattern**
-- Gerencia estado e side effects com React Query (`src/hooks/`)
-- Cache automático e sincronização
+- Hooks especializados em `src/hooks/` encapsulam lógica de negócio
+- React Query integrado para cache e sincronização automática
+- Invalidação inteligente de cache após mutações
 
 **HTTP Client Pattern**
-- Cliente centralizado com interceptors (`src/http/`)
-- Autenticação automática e refresh token transparente
+- Axios centralizado com interceptors em `src/http/`
+- Refresh token automático e transparente em requests 401
+- Headers de autenticação injetados automaticamente
 
 **Zustand para State Management**
-- Simples, menos boilerplate, performático
-- Escolhido pela simplicidade e performance
+- Performance superior com selective subscriptions
+- Escolhido pela simplicidade sem sacrificar funcionalidade
 
 **TanStack Query (React Query)**
-- Cache inteligente, sincronização, optimistic updates
-- Essential para real-time e UX moderna
+- Cache inteligente reduz requests desnecessários
+- Sincronização background mantém dados atualizados
+- Optimistic updates para feedback instantâneo
+- Essencial para aplicação real-time moderna
 
 ## 📌 3. Problemas Conhecidos e Melhorias
-  - Tokens em localStorage ( Migrar para cookies HTTP-Only com flags `Secure` e `SameSite=Strict` )
+
+**Segurança:**
+- Tokens em localStorage (migrar para cookies HTTP-Only com `Secure` e `SameSite=Strict`)
+- Implementar CSRF tokens para proteção adicional
+- Rate limiting apenas em auth (expandir para outros endpoints críticos)
+
+
+**Testes:**
+- E2E tests com Playwright para fluxos críticos
+- Testes de integração para comunicação RabbitMQ
+- Testes de carga para identificar gargalos
 
 ## 📌 4. Tempo Gasto
 
@@ -174,7 +202,7 @@ packages/
 ### Dia 10-12: Extras
 - Features extras
 
-### Dia 13-14: Refatoração
+### Dia 13: Refatoração
 - Refatoração e otimizações
 - Documentação (README)
 - Testes finais
@@ -252,14 +280,39 @@ yarn migration:run
 - ✅ Migrations para produção
 - ✅ Docker entrypoints automáticos
 
-## 📌 Diferenciais (Extras)
-- ✅ Continuous Integration com Github Actions
-- ✅ Página de perfil do usuário (visualizar e editar)
-- ✅ Reset de senha
-- ✅ Testes unitários completos para os microserviços (Auth, Tasks, Notifications)
-- ✅ Health checks nos serviços
-- ✅ Rate Limiting nos endpoints de autenticação (proteção contra brute force)
-- ✅ WebSocket com autenticação JWT
+## 📌 Diferenciais Implementados
+
+**Continuous Integration com Github Actions**
+- Pipeline automatizado: lint → build → test → type-check
+- Garante qualidade do código antes de merge
+- Feedback rápido em PRs
+
+**Página de Perfil do Usuário**
+- Visualização e edição de dados pessoais
+- Validação de dados com react-hook-form + zod
+
+**Reset de Senha**
+- Token temporário com expiração
+- Validação de senha forte
+
+**Testes Unitários Completos**
+- Cobertura em Auth, Tasks e Notifications services
+- Guards, Services e Controllers testados
+- Garante confiabilidade em refatorações
+
+**Health Checks**
+- Endpoints `/health` em todos os serviços
+- Validação de conexão com DB e RabbitMQ
+- Facilita monitoramento e debugging
+
+**Rate Limiting**
+- Proteção contra brute force em endpoints de auth
+
+**WebSocket com Autenticação JWT**
+- Conexão WS autenticada e segura
+- Namespaces isolados por usuário
+- Notificações apenas para usuários autorizados
+
 ## Licença
 
 MIT
