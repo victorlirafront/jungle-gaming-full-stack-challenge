@@ -33,10 +33,10 @@ export class AuthService {
 
     if (existingUser) {
       if (existingUser.email === email) {
-        throw new ConflictException('Email already exists');
+        throw new ConflictException('Email já está em uso');
       }
       if (existingUser.username === username) {
-        throw new ConflictException('Username already exists');
+        throw new ConflictException('O nome de usuário já existe');
       }
     }
 
@@ -74,7 +74,7 @@ export class AuthService {
     }
 
     if (!user.isActive) {
-      throw new UnauthorizedException('User account is inactive');
+      throw new UnauthorizedException('Conta de usuário inativa');
     }
 
     return this.generateTokens(user);
@@ -89,15 +89,15 @@ export class AuthService {
     });
 
     if (!storedToken) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new UnauthorizedException('Token de atualização inválido');
     }
 
     if (storedToken.revoked) {
-      throw new UnauthorizedException('Refresh token has been revoked');
+      throw new UnauthorizedException('Token de atualização foi revogado');
     }
 
     if (storedToken.expiresAt < new Date()) {
-      throw new UnauthorizedException('Refresh token has expired');
+      throw new UnauthorizedException('Token de atualização expirou');
     }
 
     try {
@@ -105,7 +105,7 @@ export class AuthService {
         secret: process.env.JWT_REFRESH_SECRET || AUTH_CONSTANTS.DEFAULT_JWT_REFRESH_SECRET,
       });
     } catch (error) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new UnauthorizedException('Token de atualização inválido');
     }
 
     storedToken.revoked = true;
@@ -118,11 +118,11 @@ export class AuthService {
     const user = await this.userRepository.findOne({ where: { id: userId } });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('Usuário não encontrado');
     }
 
     if (!user.isActive) {
-      throw new UnauthorizedException('User account is inactive');
+      throw new UnauthorizedException('Conta de usuário inativa');
     }
 
     return user;
@@ -149,7 +149,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('Usuário não encontrado');
     }
 
     return {
@@ -164,7 +164,7 @@ export class AuthService {
     const user = await this.userRepository.findOne({ where: { id: userId } });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('Usuário não encontrado');
     }
 
     if (updateProfileDto.username && updateProfileDto.username !== user.username) {
@@ -173,7 +173,7 @@ export class AuthService {
       });
 
       if (existingUser) {
-        throw new ConflictException('Username already exists');
+        throw new ConflictException('O nome de usuário já existe');
       }
 
       user.username = updateProfileDto.username;
@@ -201,13 +201,13 @@ export class AuthService {
       .getOne();
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('Usuário não encontrado');
     }
 
     const isPasswordValid = await bcrypt.compare(changePasswordDto.currentPassword, user.password);
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Current password is incorrect');
+      throw new UnauthorizedException('Senha atual incorreta');
     }
 
     const hashedPassword = await bcrypt.hash(changePasswordDto.newPassword, AUTH_CONSTANTS.BCRYPT_SALT_ROUNDS);
@@ -216,7 +216,7 @@ export class AuthService {
 
     await this.refreshTokenRepository.delete({ userId });
 
-    return { message: 'Password changed successfully' };
+    return { message: 'Senha alterada com sucesso' };
   }
 
   private async generateTokens(user: User): Promise<AuthResponse> {
