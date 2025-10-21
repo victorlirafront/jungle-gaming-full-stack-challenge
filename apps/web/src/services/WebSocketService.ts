@@ -77,11 +77,11 @@ export class WebSocketService {
       this.socket.emit(
         'getNotifications',
         { userId, limit },
-        (response: Notification[] | { error: string }) => {
+        (response: { data: Notification[]; total: number } | { error: string }) => {
           if ('error' in response) {
             reject(new Error(response.error));
           } else {
-            resolve(response);
+            resolve(response.data);
           }
         },
       );
