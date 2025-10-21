@@ -10,6 +10,8 @@ export class ConfigService {
   }
 
   get dbConfig() {
+    const synchronize = this.getDatabaseSynchronizeOption();
+
     return {
       type: 'postgres' as const,
       host: process.env.DB_HOST || APP_CONSTANTS.DATABASE.DEFAULT_HOST,
@@ -18,8 +20,29 @@ export class ConfigService {
       password: process.env.DB_PASSWORD || APP_CONSTANTS.DATABASE.DEFAULT_PASSWORD,
       database: process.env.DB_NAME || APP_CONSTANTS.DATABASE.DEFAULT_DATABASE,
       autoLoadEntities: true,
-      synchronize: process.env.NODE_ENV === 'development',
+      synchronize,
     };
+  }
+
+  private getDatabaseSynchronizeOption(): boolean {
+    if (process.env.DB_SYNCHRONIZE === 'true') {
+      this.logger.warn('⚠️  DATABASE SYNCHRONIZE IS EXPLICITLY ENABLED');
+      this.logger.warn('⚠️  This can cause DATA LOSS. Use only in development!');
+      return true;
+    }
+
+    if (this.appConfig.isProduction) {
+      this.logger.log('✅ Database synchronize is DISABLED in production');
+      return false;
+    }
+
+    if (this.appConfig.isDevelopment) {
+      this.logger.log('🔧 Database synchronize is ENABLED in development');
+      return true;
+    }
+
+    this.logger.warn('⚠️  NODE_ENV not set properly, defaulting to synchronize: false');
+    return false;
   }
 
   get jwtConfig() {
