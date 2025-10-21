@@ -101,7 +101,6 @@ packages/
 
 **TypeORM com Migrations**
 - Controle de versão do banco, seguro para produção
-- `synchronize: true` em dev, migrations em prod
 - Rollback disponível para reversão
 
 **JWT com Refresh Tokens**
@@ -172,7 +171,10 @@ packages/
 - Toast notifications
 - Skeleton loaders
 
-### Dia 10: Polimento
+### Dia 10-12: Extras
+- Features extras
+
+### Dia 13-14: Refatoração
 - Refatoração e otimizações
 - Documentação (README)
 - Testes finais
