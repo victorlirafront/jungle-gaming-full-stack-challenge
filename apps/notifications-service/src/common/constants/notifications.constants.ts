@@ -1,0 +1,5 @@
+export const NOTIFICATIONS_CONSTANTS = {
+  DEFAULT_LIMIT: 50,
+  MAX_LIMIT: 100,
+} as const;
+

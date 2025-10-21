@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { HealthModule } from './modules/health/health.module';
+import { getDatabaseSynchronizeOption } from './config/database.config';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { HealthModule } from './modules/health/health.module';
       password: process.env.DB_PASSWORD || 'password',
       database: process.env.DB_NAME || 'challenge_db',
       autoLoadEntities: true,
-      synchronize: process.env.NODE_ENV === 'development',
+      synchronize: getDatabaseSynchronizeOption(),
     }),
     NotificationsModule,
     HealthModule,

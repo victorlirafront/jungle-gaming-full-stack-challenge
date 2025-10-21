@@ -255,6 +255,8 @@ yarn migration:run
 - ✅ Reset de senha
 - ✅ Testes unitários completos para os microserviços (Auth, Tasks, Notifications)
 - ✅ Health checks nos serviços
+- ✅ Rate Limiting nos endpoints de autenticação (proteção contra brute force)
+- ✅ WebSocket com autenticação JWT
 ## Licença
 
 MIT

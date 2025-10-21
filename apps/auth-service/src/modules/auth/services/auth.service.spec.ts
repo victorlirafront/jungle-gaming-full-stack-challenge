@@ -5,14 +5,22 @@ import { UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
 import { User, RefreshToken } from '../../../entities';
+import { AUTH_CONSTANTS } from '../../../common';
 
 jest.mock('bcrypt');
+
+const createMockQueryBuilder = () => ({
+  where: jest.fn().mockReturnThis(),
+  addSelect: jest.fn().mockReturnThis(),
+  getOne: jest.fn(),
+});
 
 const mockUserRepository = {
   findOne: jest.fn(),
   create: jest.fn(),
   save: jest.fn(),
   find: jest.fn(),
+  createQueryBuilder: jest.fn(() => createMockQueryBuilder()),
 };
 
 const mockRefreshTokenRepository = {
@@ -97,7 +105,7 @@ describe('AuthService', () => {
       expect(userRepository.findOne).toHaveBeenCalledWith({
         where: [{ email: registerDto.email }, { username: registerDto.username }],
       });
-      expect(bcrypt.hash).toHaveBeenCalledWith(registerDto.password, 10);
+      expect(bcrypt.hash).toHaveBeenCalledWith(registerDto.password, AUTH_CONSTANTS.BCRYPT_SALT_ROUNDS);
       expect(userRepository.create).toHaveBeenCalledWith({
         email: registerDto.email,
         username: registerDto.username,
@@ -152,7 +160,7 @@ describe('AuthService', () => {
 
       await service.register(registerDto);
 
-      expect(bcrypt.hash).toHaveBeenCalledWith(registerDto.password, 10);
+      expect(bcrypt.hash).toHaveBeenCalledWith(registerDto.password, AUTH_CONSTANTS.BCRYPT_SALT_ROUNDS);
     });
 
     it('should generate tokens after successful registration', async () => {
@@ -186,7 +194,10 @@ describe('AuthService', () => {
       const mockAccessToken = 'access-token-123';
       const mockRefreshTokenValue = 'refresh-token-123';
 
-      userRepository.findOne.mockResolvedValue(mockUser);
+      const mockQueryBuilder = createMockQueryBuilder();
+      mockQueryBuilder.getOne.mockResolvedValue(mockUser);
+      mockUserRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       jwtService.signAsync.mockResolvedValueOnce(mockAccessToken).mockResolvedValueOnce(mockRefreshTokenValue);
       refreshTokenRepository.create.mockReturnValue({ token: mockRefreshTokenValue });
@@ -194,9 +205,8 @@ describe('AuthService', () => {
 
       const result = await service.login(loginDto);
 
-      expect(userRepository.findOne).toHaveBeenCalledWith({
-        where: [{ email: loginDto.emailOrUsername }, { username: loginDto.emailOrUsername }],
-      });
+      expect(mockUserRepository.createQueryBuilder).toHaveBeenCalledWith('user');
+      expect(mockQueryBuilder.addSelect).toHaveBeenCalledWith('user.password');
       expect(bcrypt.compare).toHaveBeenCalledWith(loginDto.password, mockUser.password);
       expect(jwtService.signAsync).toHaveBeenCalledTimes(2);
       expect(result).toHaveProperty('accessToken', mockAccessToken);
@@ -217,7 +227,10 @@ describe('AuthService', () => {
       const mockAccessToken = 'access-token-123';
       const mockRefreshTokenValue = 'refresh-token-123';
 
-      userRepository.findOne.mockResolvedValue(mockUser);
+      const mockQueryBuilder = createMockQueryBuilder();
+      mockQueryBuilder.getOne.mockResolvedValue(mockUser);
+      mockUserRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       jwtService.signAsync.mockResolvedValueOnce(mockAccessToken).mockResolvedValueOnce(mockRefreshTokenValue);
       refreshTokenRepository.create.mockReturnValue({ token: mockRefreshTokenValue });
@@ -225,16 +238,16 @@ describe('AuthService', () => {
 
       const result = await service.login(loginDtoWithUsername);
 
-      expect(userRepository.findOne).toHaveBeenCalledWith({
-        where: [{ email: loginDtoWithUsername.emailOrUsername }, { username: loginDtoWithUsername.emailOrUsername }],
-      });
+      expect(mockUserRepository.createQueryBuilder).toHaveBeenCalledWith('user');
       expect(jwtService.signAsync).toHaveBeenCalledTimes(2);
       expect(result).toHaveProperty('accessToken');
       expect(result).toHaveProperty('refreshToken');
     });
 
     it('should throw UnauthorizedException when user does not exist', async () => {
-      userRepository.findOne.mockResolvedValue(null);
+      const mockQueryBuilder = createMockQueryBuilder();
+      mockQueryBuilder.getOne.mockResolvedValue(null);
+      mockUserRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
 
       await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
       await expect(service.login(loginDto)).rejects.toThrow('Invalid credentials');
@@ -245,7 +258,10 @@ describe('AuthService', () => {
     it('should throw UnauthorizedException when password is incorrect', async () => {
       const mockUser = createMockUser();
 
-      userRepository.findOne.mockResolvedValue(mockUser);
+      const mockQueryBuilder = createMockQueryBuilder();
+      mockQueryBuilder.getOne.mockResolvedValue(mockUser);
+      mockUserRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
@@ -258,7 +274,10 @@ describe('AuthService', () => {
     it('should throw UnauthorizedException when user account is inactive', async () => {
       const mockUser = createMockUser({ isActive: false });
 
-      userRepository.findOne.mockResolvedValue(mockUser);
+      const mockQueryBuilder = createMockQueryBuilder();
+      mockQueryBuilder.getOne.mockResolvedValue(mockUser);
+      mockUserRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
       await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
@@ -374,7 +393,10 @@ describe('AuthService', () => {
       const mockUser = createMockUser({ id: userId });
       const newHashedPassword = '$2b$10$newHashedPassword';
 
-      userRepository.findOne.mockResolvedValue(mockUser);
+      const mockQueryBuilder = createMockQueryBuilder();
+      mockQueryBuilder.getOne.mockResolvedValue(mockUser);
+      mockUserRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       (bcrypt.hash as jest.Mock).mockResolvedValue(newHashedPassword);
       userRepository.save.mockResolvedValue(mockUser);
@@ -382,16 +404,19 @@ describe('AuthService', () => {
 
       const result = await service.changePassword(userId, changePasswordDto);
 
-      expect(userRepository.findOne).toHaveBeenCalledWith({ where: { id: userId } });
+      expect(mockUserRepository.createQueryBuilder).toHaveBeenCalledWith('user');
+      expect(mockQueryBuilder.addSelect).toHaveBeenCalledWith('user.password');
       expect(bcrypt.compare).toHaveBeenCalled();
-      expect(bcrypt.hash).toHaveBeenCalledWith(changePasswordDto.newPassword, 10);
+      expect(bcrypt.hash).toHaveBeenCalledWith(changePasswordDto.newPassword, AUTH_CONSTANTS.BCRYPT_SALT_ROUNDS);
       expect(userRepository.save).toHaveBeenCalled();
       expect(refreshTokenRepository.delete).toHaveBeenCalledWith({ userId });
       expect(result).toEqual({ message: 'Password changed successfully' });
     });
 
     it('should throw NotFoundException when user does not exist', async () => {
-      userRepository.findOne.mockResolvedValue(null);
+      const mockQueryBuilder = createMockQueryBuilder();
+      mockQueryBuilder.getOne.mockResolvedValue(null);
+      mockUserRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
 
       await expect(service.changePassword(userId, changePasswordDto)).rejects.toThrow('User not found');
 
@@ -402,7 +427,10 @@ describe('AuthService', () => {
     it('should throw UnauthorizedException when current password is incorrect', async () => {
       const mockUser = createMockUser({ id: userId });
 
-      userRepository.findOne.mockResolvedValue(mockUser);
+      const mockQueryBuilder = createMockQueryBuilder();
+      mockQueryBuilder.getOne.mockResolvedValue(mockUser);
+      mockUserRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       await expect(service.changePassword(userId, changePasswordDto)).rejects.toThrow(UnauthorizedException);
@@ -415,7 +443,10 @@ describe('AuthService', () => {
     it('should revoke all refresh tokens after password change', async () => {
       const mockUser = createMockUser({ id: userId });
 
-      userRepository.findOne.mockResolvedValue(mockUser);
+      const mockQueryBuilder = createMockQueryBuilder();
+      mockQueryBuilder.getOne.mockResolvedValue(mockUser);
+      mockUserRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       (bcrypt.hash as jest.Mock).mockResolvedValue('$2b$10$newHashedPassword');
       userRepository.save.mockResolvedValue(mockUser);

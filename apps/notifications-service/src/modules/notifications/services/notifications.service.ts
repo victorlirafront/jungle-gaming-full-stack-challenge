@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Notification, NotificationType } from '../../../entities/notification.entity';
+import { NOTIFICATIONS_CONSTANTS } from '../../../common';
 
 export interface CreateNotificationDto {
   userId: string;
@@ -23,11 +24,14 @@ export class NotificationsService {
     return this.notificationRepository.save(notification);
   }
 
-  async findAllByUser(userId: string, limit = 50): Promise<Notification[]> {
+  async findAllByUser(userId: string, limit?: number): Promise<Notification[]> {
+    const actualLimit = limit ?? NOTIFICATIONS_CONSTANTS.DEFAULT_LIMIT;
+    const maxLimit = Math.min(actualLimit, NOTIFICATIONS_CONSTANTS.MAX_LIMIT);
+    
     return this.notificationRepository.find({
       where: { userId },
       order: { createdAt: 'DESC' },
-      take: limit,
+      take: maxLimit,
     });
   }
 
@@ -37,7 +41,7 @@ export class NotificationsService {
     });
 
     if (!notification) {
-      throw new Error('Notification not found');
+      throw new NotFoundException('Notification not found or does not belong to user');
     }
 
     notification.read = true;

@@ -7,10 +7,12 @@ import {
   MessageBody,
   ConnectedSocket,
 } from '@nestjs/websockets';
-import { Inject } from '@nestjs/common';
+import { Inject, UnauthorizedException, Logger } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { ClientProxy } from '@nestjs/microservices';
 import { Server, Socket } from 'socket.io';
 import { firstValueFrom } from 'rxjs';
+import { JwtPayload } from '../../../common';
 
 @WebSocketGateway({
   cors: {
@@ -24,23 +26,21 @@ export class NotificationsGateway
   @WebSocketServer()
   server!: Server;
 
+  private readonly logger = new Logger(NotificationsGateway.name);
   private userSockets: Map<string, Set<string>> = new Map();
 
   constructor(
     @Inject('NOTIFICATIONS_SERVICE')
     private notificationsClient: ClientProxy,
+    private jwtService: JwtService,
   ) {}
 
   handleConnection(client: Socket) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`Client connected: ${client.id}`);
-    }
+    this.logger.log(`Client connected: ${client.id}`);
   }
 
   handleDisconnect(client: Socket) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`Client disconnected: ${client.id}`);
-    }
+    this.logger.log(`Client disconnected: ${client.id}`);
     this.userSockets.forEach((sockets, userId) => {
       if (sockets.has(client.id)) {
         sockets.delete(client.id);
@@ -52,24 +52,28 @@ export class NotificationsGateway
   }
 
   @SubscribeMessage('authenticate')
-  handleAuthenticate(
-    @MessageBody() data: { userId: string },
+  async handleAuthenticate(
+    @MessageBody() data: { token: string },
     @ConnectedSocket() client: Socket,
   ) {
-    const { userId } = data;
+    try {
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(data.token);
+      const userId = payload.sub;
 
-    if (!this.userSockets.has(userId)) {
-      this.userSockets.set(userId, new Set());
+      if (!this.userSockets.has(userId)) {
+        this.userSockets.set(userId, new Set());
+      }
+
+      this.userSockets.get(userId)!.add(client.id);
+      client.join(`user:${userId}`);
+
+      this.logger.log(`User ${userId} authenticated with socket ${client.id}`);
+
+      return { success: true, userId };
+    } catch (error) {
+      this.logger.error(`Authentication failed for socket ${client.id}`, error);
+      throw new UnauthorizedException('Invalid token');
     }
-
-    this.userSockets.get(userId)!.add(client.id);
-    client.join(`user:${userId}`);
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`User ${userId} authenticated with socket ${client.id}`);
-    }
-
-    return { success: true };
   }
 
   @SubscribeMessage('getNotifications')

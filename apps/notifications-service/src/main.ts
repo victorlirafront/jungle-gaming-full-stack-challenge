@@ -1,9 +1,10 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { Transport, MicroserviceOptions } from '@nestjs/microservices';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     AppModule,
     {
@@ -28,7 +29,7 @@ async function bootstrap() {
 
   await app.listen();
 
-  console.log('🔔 Notifications Service (microservice) started');
+  logger.log('🔔 Notifications Service (microservice) started');
 }
 
 bootstrap();
