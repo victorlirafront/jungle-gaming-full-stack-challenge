@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Input, Skeleton } fro
 import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
 import { useToastStore } from '@/store/toast.store';
 import { authService } from '@/services';
+import { getErrorMessage } from '@/types/error.types';
 
 export function Profile() {
   const { data: profile, isLoading, error } = useProfile();
@@ -44,11 +45,11 @@ export function Profile() {
       });
 
       setIsEditing(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       addToast({
         type: 'error',
         title: 'Erro ao atualizar perfil',
-        message: error?.message || 'Tente novamente',
+        message: getErrorMessage(error),
       });
     }
   };
@@ -86,11 +87,11 @@ export function Profile() {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmNewPassword('');
-    } catch (error: any) {
+    } catch (error: unknown) {
       addToast({
         type: 'error',
         title: 'Erro ao alterar senha',
-        message: error?.message || 'Verifique sua senha atual',
+        message: getErrorMessage(error),
       });
     }
   };
@@ -127,7 +128,7 @@ export function Profile() {
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-destructive mb-2">Erro ao carregar perfil</p>
-            <p className="text-sm text-muted-foreground">{(error as any)?.message || 'Tente novamente'}</p>
+            <p className="text-sm text-muted-foreground">{getErrorMessage(error)}</p>
           </CardContent>
         </Card>
       </div>
