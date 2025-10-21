@@ -1,9 +1,10 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { Transport, MicroserviceOptions } from '@nestjs/microservices';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalPipes(
@@ -30,7 +31,7 @@ async function bootstrap() {
   const port = process.env.PORT || 3003;
   await app.listen(port);
 
-  console.log(`📋 Tasks Service running on http://localhost:${port}`);
+  logger.log(`📋 Tasks Service running on http://localhost:${port}`);
 }
 
 bootstrap();
