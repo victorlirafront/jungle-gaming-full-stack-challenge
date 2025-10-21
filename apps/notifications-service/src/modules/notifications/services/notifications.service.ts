@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, LessThan } from 'typeorm';
 import { Notification, NotificationType } from '../../../entities/notification.entity';
 import { NOTIFICATIONS_CONSTANTS } from '../../../common';
 
@@ -14,6 +14,8 @@ export interface CreateNotificationDto {
 
 @Injectable()
 export class NotificationsService {
+  private readonly logger = new Logger(NotificationsService.name);
+
   constructor(
     @InjectRepository(Notification)
     private notificationRepository: Repository<Notification>,
@@ -63,6 +65,19 @@ export class NotificationsService {
 
   async delete(id: string, userId: string): Promise<void> {
     await this.notificationRepository.delete({ id, userId });
+  }
+
+  async cleanOldNotifications(): Promise<void> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - NOTIFICATIONS_CONSTANTS.RETENTION_DAYS);
+
+    const result = await this.notificationRepository.delete({
+      createdAt: LessThan(cutoffDate),
+    });
+
+    if (result.affected && result.affected > 0) {
+      this.logger.log(`🧹 Cleaned ${result.affected} old notifications (older than ${NOTIFICATIONS_CONSTANTS.RETENTION_DAYS} days)`);
+    }
   }
 }
 

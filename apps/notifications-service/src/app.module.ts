@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { HealthModule } from './modules/health/health.module';
+import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { getDatabaseSynchronizeOption } from './config/database.config';
 
 @Module({
@@ -18,6 +19,7 @@ import { getDatabaseSynchronizeOption } from './config/database.config';
     }),
     NotificationsModule,
     HealthModule,
+    SchedulerModule,
   ],
   controllers: [],
   providers: [],
