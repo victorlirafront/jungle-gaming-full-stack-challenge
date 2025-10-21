@@ -5,10 +5,14 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Task } from './task.entity';
 
 @Entity('task_assignments')
+@Index(['taskId'])
+@Index(['userId'])
+@Index(['taskId', 'userId'])
 export class TaskAssignment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
