@@ -1,7 +1,7 @@
 # Base stage
 FROM node:20-alpine AS base
 WORKDIR /app
-RUN npm install -g turbo
+RUN npm install -g turbo && apk add --no-cache curl
 
 # Development stage
 FROM base AS development
