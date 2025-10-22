@@ -205,10 +205,7 @@ packages/
 - Toast notifications
 - Skeleton loaders
 
-### Dia 10-12: Extras
-- Features extras
-
-### Dia 13: Refatoração
+### Dia 10: Extras + Refatoração
 - Refatoração e otimizações
 - Documentação (README)
 - Testes finais
