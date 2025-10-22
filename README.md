@@ -172,6 +172,9 @@ packages/
 - Testes de integração para comunicação RabbitMQ
 - Testes de carga para identificar gargalos
 
+**Env:**
+- Mover dados sensíveis para um arquivo .env
+
 ## 📌 4. Tempo Gasto
 
 ### Dia 1-2: Fundação
