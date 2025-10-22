@@ -3,31 +3,60 @@ FROM node:20-alpine AS base
 WORKDIR /app
 RUN npm install -g turbo
 
-# Dependencies stage - install production dependencies only
+# Dependencies stage - install production dependencies with optimized cache layers
 FROM base AS dependencies
 WORKDIR /app
 RUN apk add --no-cache python3 make g++
+
+# Copy only package files first for better cache utilization
+COPY package*.json ./
+COPY turbo.json ./
+COPY packages/package*.json ./packages/
+COPY apps/notifications-service/package*.json ./apps/notifications-service/
+
+# Install dependencies (this layer will be cached if package files don't change)
+RUN npm ci --only=production --workspace=notifications-service && npm cache clean --force
+
+# Copy remaining packages files after dependency installation
+COPY packages ./packages
+
+# Development stage with optimized cache layers
+FROM base AS development
+WORKDIR /app
+
+# Copy only package files first for better cache utilization
+COPY package*.json ./
+COPY turbo.json ./
+COPY packages/package*.json ./packages/
+COPY apps/notifications-service/package*.json ./apps/notifications-service/
+
+# Install all dependencies (dev + prod) - this layer will be cached
+RUN npm install
+
+# Copy remaining files after dependency installation
+COPY packages ./packages
+COPY apps/notifications-service ./apps/notifications-service
+
+EXPOSE 3004
+CMD ["npm", "run", "dev", "--workspace=notifications-service"]
+
+# Build stage with optimized cache layers
+FROM base AS builder
+WORKDIR /app
+
+# Copy package files first for dependency caching
 COPY package*.json ./
 COPY turbo.json ./
 COPY packages ./packages
 COPY apps/notifications-service/package*.json ./apps/notifications-service/
-RUN npm ci --only=production --workspace=notifications-service && npm cache clean --force
 
-# Development stage
-FROM base AS development
-WORKDIR /app
-COPY package*.json ./
-COPY turbo.json ./
-COPY packages ./packages
+# Install dependencies for build
+RUN npm ci
+
+# Copy source code after dependencies are installed
 COPY apps/notifications-service ./apps/notifications-service
-RUN npm install
-EXPOSE 3004
-CMD ["npm", "run", "dev", "--workspace=notifications-service"]
 
-# Build stage
-FROM base AS builder
-WORKDIR /app
-COPY . .
+# Build the application
 RUN turbo run build --filter=notifications-service
 
 # Production stage - optimized for size and security
