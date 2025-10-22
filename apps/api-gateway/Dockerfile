@@ -11,14 +11,12 @@ RUN apk add --no-cache python3 make g++
 # Copy only package files first for better cache utilization
 COPY package*.json ./
 COPY turbo.json ./
-COPY packages/package*.json ./packages/
+COPY packages/ ./packages/
 COPY apps/api-gateway/package*.json ./apps/api-gateway/
 
 # Install dependencies (this layer will be cached if package files don't change)
 RUN npm ci --only=production --workspace=api-gateway && npm cache clean --force
 
-# Copy remaining packages files after dependency installation
-COPY packages ./packages
 
 # Development stage with optimized cache layers
 FROM base AS development
@@ -28,14 +26,13 @@ RUN apk add --no-cache python3 make g++
 # Copy only package files first for better cache utilization
 COPY package*.json ./
 COPY turbo.json ./
-COPY packages/package*.json ./packages/
+COPY packages/ ./packages/
 COPY apps/api-gateway/package*.json ./apps/api-gateway/
 
 # Install all dependencies (dev + prod) - this layer will be cached
 RUN npm install
 
 # Copy remaining files after dependency installation
-COPY packages ./packages
 COPY apps/api-gateway ./apps/api-gateway
 
 EXPOSE 3001
@@ -48,7 +45,7 @@ WORKDIR /app
 # Copy package files first for dependency caching
 COPY package*.json ./
 COPY turbo.json ./
-COPY packages ./packages
+COPY packages/ ./packages/
 COPY apps/api-gateway/package*.json ./apps/api-gateway/
 
 # Install dependencies for build
