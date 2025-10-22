@@ -1,5 +1,4 @@
 services:
-  # API Gateway
   api-gateway:
     container_name: api-gateway
     build:
@@ -33,7 +32,6 @@ services:
     networks:
       - challenge-network
 
-  # Auth Service
   auth-service:
     container_name: auth-service
     build:
@@ -71,7 +69,6 @@ services:
     networks:
       - challenge-network
 
-  # Tasks Service
   tasks-service:
     container_name: tasks-service
     build:
@@ -108,7 +105,6 @@ services:
     networks:
       - challenge-network
 
-  # Notifications Service
   notifications-service:
     container_name: notifications-service
     build:
@@ -142,7 +138,6 @@ services:
     networks:
       - challenge-network
 
-  # Postgres Database
   db:
     image: postgres:17.5-alpine3.21
     container_name: db
@@ -165,7 +160,6 @@ services:
       retries: 5
       start_period: 30s
 
-  # RabbitMQ
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
     container_name: rabbitmq
@@ -187,7 +181,6 @@ services:
       retries: 3
       start_period: 30s
 
-  # Frontend React Application
   web:
     container_name: web
     platform: linux/arm64
