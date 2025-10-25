@@ -34,6 +34,11 @@ yarn start
 # RabbitMQ Admin: http://localhost:15672 (admin/admin)
 ```
 
+### Verificar se todos os serviços estão rodando:
+```bash
+docker-compose ps
+```
+
 ### Health Checks:
 - **API Gateway:** http://localhost:3001/health
 - **Auth Service:** http://localhost:3002/health
