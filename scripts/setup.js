@@ -17,6 +17,10 @@ function runCommand(command, description) {
 function checkPackagesBuilt() {
   const typesDist = path.join(__dirname, '../packages/types/dist');
   const utilsDist = path.join(__dirname, '../packages/utils/dist');
+  return fs.existsSync(typesDist) && fs.existsSync(utilsDist);
+}
+
+function checkNodeModules() {
   return fs.existsSync(path.join(__dirname, '../node_modules'));
 }
 
