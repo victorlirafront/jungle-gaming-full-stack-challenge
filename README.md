@@ -7,6 +7,11 @@
 
 Sistema de gestão de tarefas colaborativo com microserviços, notificações em tempo real e arquitetura event-driven.
 
+## ✅ Status do Projeto
+
+**Última atualização:** 25/10/2025  
+
+
 ## 📌 Início Rápido
 
 **Pré-requisitos:** 
@@ -19,23 +24,55 @@ Sistema de gestão de tarefas colaborativo com microserviços, notificações em
 git clone https://github.com/victorlirafront/jungle-gaming-full-stack-challenge.git
 cd jungle-gaming-full-stack-challenge
 
-# 2. Instalar dependências
-yarn install
+# 2. Setup automático (instala dependências + build packages + sobe serviços)
+yarn start
 
-# 3. Subir todos os serviços (banco, RabbitMQ, backend, frontend)
-docker-compose up -d
-
-# 4. Acessar a aplicação
+# 3. Acessar a aplicação
 # Frontend: http://localhost:3000
 # API Gateway: http://localhost:3001
 # Swagger Docs: http://localhost:3001/api/docs
 # RabbitMQ Admin: http://localhost:15672 (admin/admin)
+```
 
-docker compose logs -f --tail=50
-# 5. Veja os logs dos serviços
+### Comandos alternativos:
+
+```bash
+# Setup apenas (sem subir serviços)
+yarn setup
+
+# Apenas subir containers (se já fez setup)
+yarn docker:up
+
+# Ver logs dos serviços
+yarn docker:logs
+
+# Modo desenvolvimento com watch automático (reconstrói packages quando mudar)
+yarn dev:watch
 ```
 
 **Parar:** `docker-compose down`
+
+## 📌 Verificação de Status
+
+### Verificar se todos os serviços estão rodando:
+```bash
+docker-compose ps
+```
+
+
+### Health Checks:
+- **API Gateway:** http://localhost:3001/health
+- **Auth Service:** http://localhost:3002/health
+- **Tasks Service:** http://localhost:3003/health
+- **Notifications Service:** http://localhost:3004/health
+
+## 📌 Troubleshooting
+
+### Problema: "Cannot find module '@repo/types'"
+```bash
+# Solução: Rodar setup automático
+yarn setup
+```
 
 ## 🎯 Destaques Técnicos
 
