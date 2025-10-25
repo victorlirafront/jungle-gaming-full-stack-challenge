@@ -24,7 +24,9 @@ Sistema de gestão de tarefas colaborativo com microserviços, notificações em
 git clone https://github.com/victorlirafront/jungle-gaming-full-stack-challenge.git
 cd jungle-gaming-full-stack-challenge
 
-# 2. Setup automático (instala dependências + build packages + sobe serviços) -- certifique se de que o Docker Desktop esta rodando
+# ( Certifique se de que o Docker Desktop esta rodando )
+# 2. Setup automático (instala dependências + build packages + sobe serviços) 
+
 yarn start
 
 # 3. Acessar a aplicação
