@@ -34,45 +34,12 @@ yarn start
 # RabbitMQ Admin: http://localhost:15672 (admin/admin)
 ```
 
-### Comandos alternativos:
-
-```bash
-# Setup apenas (sem subir serviços)
-yarn setup
-
-# Apenas subir containers (se já fez setup)
-yarn docker:up
-
-# Ver logs dos serviços
-yarn docker:logs
-
-# Modo desenvolvimento com watch automático (reconstrói packages quando mudar)
-yarn dev:watch
-```
-
-**Parar:** `docker-compose down`
-
-## 📌 Verificação de Status
-
-### Verificar se todos os serviços estão rodando:
-```bash
-docker-compose ps
-```
-
-
 ### Health Checks:
 - **API Gateway:** http://localhost:3001/health
 - **Auth Service:** http://localhost:3002/health
 - **Tasks Service:** http://localhost:3003/health
 - **Notifications Service:** http://localhost:3004/health
 
-## 📌 Troubleshooting
-
-### Problema: "Cannot find module '@repo/types'"
-```bash
-# Solução: Rodar setup automático
-yarn setup
-```
 
 ## 🎯 Destaques Técnicos
 
