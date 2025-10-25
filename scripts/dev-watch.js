@@ -16,9 +16,9 @@ function rebuildPackages() {
 function watchPackages() {
   const typesSrc = path.join(__dirname, '../packages/types/src');
   const utilsSrc = path.join(__dirname, '../packages/utils/src');
-  
+
   console.log('Monitorando mudanças nos packages...');
-  
+
   if (fs.existsSync(typesSrc)) {
     fs.watch(typesSrc, { recursive: true }, (eventType, filename) => {
       if (filename && (filename.endsWith('.ts') || filename.endsWith('.js'))) {
@@ -26,7 +26,7 @@ function watchPackages() {
       }
     });
   }
-  
+
   if (fs.existsSync(utilsSrc)) {
     fs.watch(utilsSrc, { recursive: true }, (eventType, filename) => {
       if (filename && (filename.endsWith('.ts') || filename.endsWith('.js'))) {
